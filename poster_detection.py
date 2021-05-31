@@ -10,7 +10,7 @@ import logging
 model = {}
 detector_descriptor = cv.SIFT_create()#nfeatures=None, nOctaveLayers=None, contrastThreshold=None, edgeThreshold=None, sigma=None)
 
-base_path_for_gt = "/media/dov84d/EHD3/ARPalus/Verizon/verizon/annotation_darknet/annotations/"
+base_path_for_gt = "Data/annotations/"
 model_scale_percent = 100
 input_height = 800
 iou_th = 0.3
@@ -236,10 +236,9 @@ def detect_all(planogram_images, realogram_images, show=False):
 
 if __name__ == "__main__":
     logging.basicConfig( format='%(asctime)s.%(msecs)03d %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
-    planogram_images = glob("/media/dov84d/EHD3/ARPalus/Verizon/Posters/planogram_images_v2/*.png")
-    realogram_images = glob("/media/dov84d/EHD3/ARPalus/Verizon/Posters/realogram_images/*.jpg")
+    planogram_images = glob("Data/planogram_images/*.png")
+    realogram_images = glob("Data/realogram_images/*.jpg")
 
     detect_all(planogram_images, realogram_images, show=False)
-
 
 
