@@ -240,5 +240,5 @@ if __name__ == "__main__":
     realogram_images = glob("Data/realogram_images/*.jpg")
 
     detect_all(planogram_images, realogram_images, show=False)
-
+    # detect_all(planogram_images, realogram_images, show=True) # SET PARAM SHOW == TRUE for visualizations
 
