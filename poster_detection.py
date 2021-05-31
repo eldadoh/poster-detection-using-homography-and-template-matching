@@ -228,8 +228,6 @@ def detect_all(planogram_images, realogram_images, show=False):
         else:
             print("Failed - might me missing annotation")
 
-
-
     print("Average detection time {}".format(total_detection_time/len(realogram_images)))
     print("Found TP {} FP {} FN {}".format(str(all_TP), str(all_FP), str(all_FN)))
 
