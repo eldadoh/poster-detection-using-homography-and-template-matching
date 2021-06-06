@@ -3,7 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import glob
- 
+
+def pad_image_on_borders(img):
+
+    return np.pad(img ,((2, 2), (2, 2),(0,0)), 'constant' , constant_values = (255))
+
 def drawKeyPts(img,kps,col,th,circle_visualization = False):
     
     for key_point in kps:
