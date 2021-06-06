@@ -11,6 +11,8 @@ from features_utils import drawKeyPts,Plot_img_cv2
 model = {}
 detector_descriptor = cv.SIFT_create()#nfeatures=None, nOctaveLayers=None, contrastThreshold=None, edgeThreshold=None, sigma=None)
 
+# detector_descriptor = cv.ORB_create()
+
 base_path_for_gt = "Data/annotations/"
 model_scale_percent = 100
 input_height = 800
@@ -92,7 +94,7 @@ def get_gt_for_img(realogram_image, filter_classes=[0], show=False):
 def load_model(planogram_images):
 
     for planogram_image in planogram_images:
-        planogram_image ='/home/arpalus/Work_Eldad/Arpalus_Code/Eldad-Local/arpalus-poster_detection/Data_new/planograms/planograms_parsed_images/APPBARBSDMN24x150421.jpg'
+        # planogram_image ='/home/arpalus/Work_Eldad/Arpalus_Code/Eldad-Local/arpalus-poster_detection/Data_new/planograms/planograms_parsed_images/APPBARBSDMN24x150421.jpg'
 
         img1 = cv.imread(planogram_image, cv.IMREAD_COLOR)
 
@@ -104,9 +106,11 @@ def load_model(planogram_images):
 
         planogram_image_name = os.path.splitext(os.path.basename(planogram_image))[0]
         kp1, des1 = detector_descriptor.detectAndCompute(img1,None)
-
-        poster_with_kp = drawKeyPts(img1.copy(),kp1,(0,255,0),5)  
-        Plot_img_cv2(cv.cvtColor(poster_with_kp,cv.COLOR_BGR2RGB))      
+        poster_with_kp = drawKeyPts(img1.copy(),kp1,(0,255,0),5)
+        path_to_save_img = os.path.join('posters_keypoints_sift',os.path.basename(planogram_image)) 
+        cv.imwrite(path_to_save_img,poster_with_kp)
+         
+        # Plot_img_cv2(cv.cvtColor(poster_with_kp,cv.COLOR_BGR2RGB))      
         model[planogram_image_name] = [kp1, des1, img1, h, w, d]
 
 
@@ -139,10 +143,6 @@ def detect(realogram_image, show=False):
     search_params = dict(checks = 50)
     flann = cv.FlannBasedMatcher(index_params, search_params)
     
-
-
-
-
 
     FP, FN, TP = 0,0,0
     for planogram_image_name in model.keys():
@@ -188,7 +188,6 @@ def detect(realogram_image, show=False):
                 #     iou = bb_intersection_over_union(box_det, box_gt)
 
 
-
                 print("Results for planogram_image_name = {} realogram_image_name = {} match_quality = {} match_num = {} d_area = {}".format(planogram_image_name, realogram_image_name, match_quality, match_num, d_area))
                 if match_quality < MAX_MATCH_DIST and match_num > MIN_MATCH_NUM and d_area > MIN_DETECT_AREA:
                     if show:
@@ -221,7 +220,6 @@ def detect(realogram_image, show=False):
     # return True, FP, FN, TP
 
 def detect_all(planogram_images, realogram_images, show=False):
-
 
     start_time = time.time()
     load_model(planogram_images)
