@@ -27,7 +27,7 @@ def extract_images_from_dirs(planogram_images_dir_path , defualt_output = 'Data_
             shutil.copy(img_,img_new_path)
 
     print('Done parsing')
-    
+
 def main():
     
     """
@@ -45,4 +45,5 @@ def main():
     extract_images_from_dirs(PLANOGRAM_IMAGES_DIR_PATH)
 
 if __name__ == "__main__" : 
-    main()
+    #main() 
+    pass

@@ -6,6 +6,7 @@ import os
 import shutil
 import time
 import logging
+from features_utils import drawKeyPts,Plot_img_cv2
 
 model = {}
 detector_descriptor = cv.SIFT_create()#nfeatures=None, nOctaveLayers=None, contrastThreshold=None, edgeThreshold=None, sigma=None)
@@ -91,6 +92,8 @@ def get_gt_for_img(realogram_image, filter_classes=[0], show=False):
 def load_model(planogram_images):
 
     for planogram_image in planogram_images:
+        planogram_image ='/home/arpalus/Work_Eldad/Arpalus_Code/Eldad-Local/arpalus-poster_detection/Data_new/planograms/planograms_parsed_images/APPBARBSDMN24x150421.jpg'
+
         img1 = cv.imread(planogram_image, cv.IMREAD_COLOR)
 
         width = int(img1.shape[1] * model_scale_percent / 100)
@@ -101,6 +104,9 @@ def load_model(planogram_images):
 
         planogram_image_name = os.path.splitext(os.path.basename(planogram_image))[0]
         kp1, des1 = detector_descriptor.detectAndCompute(img1,None)
+
+        poster_with_kp = drawKeyPts(img1.copy(),kp1,(0,255,0),5)  
+        Plot_img_cv2(cv.cvtColor(poster_with_kp,cv.COLOR_BGR2RGB))      
         model[planogram_image_name] = [kp1, des1, img1, h, w, d]
 
 
@@ -111,11 +117,11 @@ def detect(realogram_image, show=False):
     MIN_MATCH_NUM = 30
     MIN_DETECT_AREA = 50
 
-    gt_for_img = get_gt_for_img(realogram_image, filter_classes=list(model.keys()), show=False)
+    # gt_for_img = get_gt_for_img(realogram_image, filter_classes=list(model.keys()), show=False)
     realogram_image_name = os.path.splitext(os.path.basename(realogram_image))[0]
 
-    if gt_for_img is None:
-        return False, 0,0,0
+    # if gt_for_img is None:
+    #     return False, 0,0,0
 
     img2 = cv.imread(realogram_image, cv.IMREAD_COLOR)
     img2 = cv.cvtColor(img2, cv.COLOR_BGR2RGB)
@@ -125,16 +131,24 @@ def detect(realogram_image, show=False):
 
     #h,w,d = img2.shape
     kp2, des2 = detector_descriptor.detectAndCompute(img2, None)
+    poster_with_kp = drawKeyPts(img2.copy(),kp2,(0,255,0),5)  
+    # Plot_img_cv2(cv.cvtColor(poster_with_kp,cv.COLOR_BGR2RGB)) 
     FLANN_INDEX_KDTREE = 1
     index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
 
     search_params = dict(checks = 50)
     flann = cv.FlannBasedMatcher(index_params, search_params)
+    
+
+
+
+
 
     FP, FN, TP = 0,0,0
     for planogram_image_name in model.keys():
         kp1, des1, img1, h, w, d = model[planogram_image_name]
-
+        img_with_kp = drawKeyPts(img2.copy(),kp2,(0,255,0),5)  
+        # Plot_img_cv2(img_with_kp) 
         matches = flann.knnMatch(np.float32(des1), np.float32(des2), k=2)
         # store all the good matches as per Lowe's ratio test.
         good = []
@@ -164,14 +178,14 @@ def detect(realogram_image, show=False):
                 match_quality = np.linalg.norm(dst_pts_in - cv.perspectiveTransform(src_pts_in, M))
                 match_num = np.sum(mask)
 
-                iou = 0
-                if planogram_image_name in gt_for_img.keys():
-                    cur_gt_for_img = gt_for_img[planogram_image_name]
-                    if show:
-                        img2 = cv.polylines(img2,[np.int32(cur_gt_for_img)],True,(0,255,0),3, cv.LINE_AA)
-                    box_det = (dst[0,0,0], dst[0,0,1], dst[2,0,0], dst[2,0,1])
-                    box_gt = (cur_gt_for_img[0][0], cur_gt_for_img[0][1], cur_gt_for_img[2][0], cur_gt_for_img[2][1])
-                    iou = bb_intersection_over_union(box_det, box_gt)
+                # iou = 0
+                # if planogram_image_name in gt_for_img.keys():
+                #     cur_gt_for_img = gt_for_img[planogram_image_name]
+                #     if show:
+                #         img2 = cv.polylines(img2,[np.int32(cur_gt_for_img)],True,(0,255,0),3, cv.LINE_AA)
+                #     box_det = (dst[0,0,0], dst[0,0,1], dst[2,0,0], dst[2,0,1])
+                #     box_gt = (cur_gt_for_img[0][0], cur_gt_for_img[0][1], cur_gt_for_img[2][0], cur_gt_for_img[2][1])
+                #     iou = bb_intersection_over_union(box_det, box_gt)
 
 
 
@@ -179,8 +193,9 @@ def detect(realogram_image, show=False):
                 if match_quality < MAX_MATCH_DIST and match_num > MIN_MATCH_NUM and d_area > MIN_DETECT_AREA:
                     if show:
                         img_with_detection = cv.polylines(img2,[np.int32(dst)],True,(255,0,0),3, cv.LINE_AA)
-                        cv.putText(img_with_detection, planogram_image_name  + " " + str(int(match_quality)) + " " + str(int(match_num)) + " iou " + str(iou),  (0, 0 + 45), cv.FONT_HERSHEY_SIMPLEX, 1, (36,255,12), 2)
-
+                        # cv.putText(img_with_detection, planogram_image_name  + " " + str(int(match_quality)) + " " + str(int(match_num)) + " iou " + str(iou),  (0, 0 + 45), cv.FONT_HERSHEY_SIMPLEX, 1, (36,255,12), 2)
+                        
+                        cv.putText(img_with_detection, planogram_image_name  + " " + str(int(match_quality)) + " " + str(int(match_num)) ,  (0, 0 + 45), cv.FONT_HERSHEY_SIMPLEX, 1, (36,255,12), 2)
                         plt.imshow(img_with_detection, 'gray'),plt.show()
 
                         draw_params = dict(matchColor = (0,255,0), # draw matches in green color
@@ -189,11 +204,11 @@ def detect(realogram_image, show=False):
                                            flags = 2)
                         img_with_matches = cv.drawMatches(img1,kp1,img_with_detection,kp2,good,None,**draw_params)
                         plt.imshow(img_with_matches, 'gray'),plt.show()
-                    if iou > iou_th: #TP
-                        TP += 1
-                        gt_for_img.pop(planogram_image_name, None)
-                    else:
-                        FP += 1
+                    # if iou > iou_th: #TP
+                    #     TP += 1
+                    #     gt_for_img.pop(planogram_image_name, None)
+                    # else:
+                    #     FP += 1
 
 
             else:
@@ -202,8 +217,8 @@ def detect(realogram_image, show=False):
         else:
             print("Not enough matches found in the first phase - {}/{}".format(len(good), MIN_MATCH_COUNT) )
 
-    FN = len(gt_for_img.keys())
-    return True, FP, FN, TP
+    # FN = len(gt_for_img.keys())
+    # return True, FP, FN, TP
 
 def detect_all(planogram_images, realogram_images, show=False):
 
@@ -215,6 +230,7 @@ def detect_all(planogram_images, realogram_images, show=False):
     total_detection_time = 0
     all_FP, all_FN, all_TP = 0, 0, 0
     for realogram_image in realogram_images:
+        realogram_image = '/home/arpalus/Work_Eldad/Arpalus_Code/Eldad-Local/arpalus-poster_detection/Data_new/realograms/valid_jpg_format_realograms_images/IMG_1559.jpg'
         start_time = time.time()
         print("******* start detection *******")
         success, FP, FN, TP = detect(realogram_image, show)
@@ -236,8 +252,12 @@ def detect_all(planogram_images, realogram_images, show=False):
 
 if __name__ == "__main__":
     logging.basicConfig( format='%(asctime)s.%(msecs)03d %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
-    planogram_images = glob("Data/planogram_images/*.png")
-    realogram_images = glob("Data/realogram_images/*.jpg")
+
+    # planogram_images = glob("Data/planogram_images/*.png")
+    # realogram_images = glob("Data/realogram_images/*.jpg")
+
+    planogram_images = glob("Data_new/planograms/planograms_parsed_images/*.jpg")
+    realogram_images = glob("Data_new/realograms/valid_jpg_format_realograms_images/*.jpg")
 
     detect_all(planogram_images, realogram_images, show=True)
     # detect_all(planogram_images, realogram_images, show=True) # SET PARAM SHOW == TRUE for visualizations
