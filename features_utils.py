@@ -3,6 +3,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import glob
+from cv2 import BFMatcher as bf
+
+
+def knn_matcher(des1,des2):
+    matches = bf.knnMatch(des1, des2, k=2) 
+    good = []
+    for (m1, m2) in matches: # for every descriptor, take closest two matches
+        if m1.distance < 0.7 * m2.distance: # best match has to be this much closer than second best
+            good.append(m1)
 
 def pad_image_on_borders(img):
 
@@ -25,7 +34,9 @@ def drawKeyPts(img,kps,col,th,circle_visualization = False):
     plt.plot()
     return img  
      
-def Plot_img_cv2(img, str_name='_',resize_flag = False,height=400):
+def Plot_img_cv2(img, str_name='_',cvtcolor_flag = True ,resize_flag = False,height=400):
+    if cvtcolor_flag == True :
+        img = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
     if resize_flag:
         img = Resize(img,height)
     cv2.imshow(str_name, img)

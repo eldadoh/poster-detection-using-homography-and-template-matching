@@ -92,8 +92,7 @@ def get_gt_for_img(realogram_image, filter_classes=[0], show=False):
                        cv.FONT_HERSHEY_SIMPLEX, 2, (36, 255, 12), 10)
 
     if show:
-        plt.imshow(img)
-        plt.show()
+        Plot_img_cv2(img)
 
     return result
 
@@ -118,8 +117,7 @@ def load_model(planogram_images):
 
         ###Plot###
         poster_with_kp = drawKeyPts(img1.copy(), kp1, (0, 255, 0), 5)
-        path_to_save_img = os.path.join(
-            'posters_keypoints_sift', os.path.basename(planogram_image))
+        path_to_save_img = os.path.join('posters_keypoints_sift', os.path.basename(planogram_image))
         # cv.imwrite(path_to_save_img, poster_with_kp)
         ##########
 
@@ -215,15 +213,16 @@ def detect(realogram_image, show=False):
 
                         cv.putText(img_with_detection, planogram_image_name + " " + str(int(match_quality)) +
                                    " " + str(int(match_num)),  (0, 0 + 45), cv.FONT_HERSHEY_SIMPLEX, 1, (36, 255, 12), 2)
-                        plt.imshow(img_with_detection, 'gray'), plt.show()
-
+                        # plt.imshow(img_with_detection, 'gray'), plt.show()
+                        Plot_img_cv2(img_with_detection)
                         draw_params = dict(matchColor=(0, 255, 0),  # draw matches in green color
                                            singlePointColor=None,
                                            matchesMask=matchesMask,  # draw only inliers
                                            flags=2)
                         img_with_matches = cv.drawMatches(
                             img1, kp1, img_with_detection, kp2, good, None, **draw_params)
-                        plt.imshow(img_with_matches, 'gray'), plt.show()
+                        Plot_img_cv2(img_with_matches)
+                        #plt.imshow(img_with_matches, 'gray'), plt.show()
                     # if iou > iou_th: #TP
                     #     TP += 1
                     #     gt_for_img.pop(planogram_image_name, None)
@@ -277,22 +276,18 @@ if __name__ == "__main__":
     # planogram_images = glob("Data/planogram_images/*.png")
     # realogram_images = glob("Data/realogram_images/*.jpg")
 
-    planogram_images = glob(
-        "Data_new/planograms/planograms_parsed_images/*.jpg")
-    realogram_images = glob(
-        "Data_new/realograms/valid_jpg_format_realograms_images/*.jpg")
+    planogram_images = glob("Data_new/planograms/planograms_parsed_images/*.jpg")
+    realogram_images = glob("Data_new/realograms/valid_jpg_format_realograms_images/*.jpg")
 
 
-    realogram_image ='/home/arpalus/Work_Eldad/Arpalus_Code/Eldad-Local/arpalus-poster_detection/Data_new/realograms/valid_jpg_format_realograms_images/IMG_1559.jpg'
-    
-    realogram_images = [realogram_image]
+    # realogram_image ='/home/arpalus/Work_Eldad/Arpalus_Code/Eldad-Local/arpalus-poster_detection/Data_new/realograms/valid_jpg_format_realograms_images/IMG_1559.jpg'
+    # realogram_images = [realogram_image]
 
-    planogram_image_O_easy = 'Data_new/planograms/planograms_parsed_images/APPBARBSEMN39x270421.jpg'
+    # planogram_image_O_easy = 'Data_new/planograms/planograms_parsed_images/APPBARBSEMN39x270421.jpg'
     # planogram_image_U_hard = 'Data_new/planograms/planograms_parsed_images/APPBARBSDMN24x150421.jpg'
-
-    planogram_images = [planogram_image_O_easy]
+    # planogram_images = [planogram_image_O_easy]
 
     detect_all(planogram_images, realogram_images, show=True)
-    # detect_all(planogram_images, realogram_images, show=True) # SET PARAM SHOW == TRUE for visualizations
+    
 
 
