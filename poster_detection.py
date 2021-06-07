@@ -6,7 +6,14 @@ import os
 import shutil
 import time
 import logging
-from features_utils import drawKeyPts, Plot_img_cv2,pad_image_on_borders
+from features_utils import Resize, drawKeyPts, Plot_img_cv2,pad_image_on_borders,plots_opencv_image_pair
+import numpy as np
+from template_matching import calc_ssim, template_matching_func
+from skimage.transform import rescale, downscale_local_mean
+from skimage.transform import resize as skimage_resize 
+
+
+
 
 model = {}
 # nfeatures=None, nOctaveLayers=None, contrastThreshold=None, edgeThreshold=None, sigma=None)
@@ -99,6 +106,7 @@ def get_gt_for_img(realogram_image, filter_classes=[0], show=False):
 
 def load_model(planogram_images):
     
+    print('----------------Start building model dict--------------------')
 
     for planogram_image in planogram_images:
 
@@ -124,6 +132,7 @@ def load_model(planogram_images):
         # Plot_img_cv2(cv.cvtColor(poster_with_kp,cv.COLOR_BGR2RGB))
         model[planogram_image_name] = [kp1, des1, img1, h, w, d]
 
+    print('-------------Done building model dict------------------')
 
 def detect(realogram_image, show=False):
     MIN_MATCH_COUNT = 10
@@ -243,16 +252,22 @@ def detect(realogram_image, show=False):
 def detect_all(planogram_images, realogram_images, show=False):
 
     start_time = time.time()
+
     load_model(planogram_images)
-    print("--- Done create models in %s seconds ---" %
-          (time.time() - start_time))
+    
+    print("--- Done create models in %s seconds ---" % (time.time() - start_time))
 
     total_detection_time = 0
     all_FP, all_FN, all_TP = 0, 0, 0
+    
     for realogram_image in realogram_images:
+
         start_time = time.time()
+       
         print("******* start detection *******")
+
         success, FP, FN, TP = detect(realogram_image, show)
+      
         if success:
             detection_time = time.time() - start_time
             total_detection_time += detection_time
@@ -268,13 +283,10 @@ def detect_all(planogram_images, realogram_images, show=False):
     # print("Found TP {} FP {} FN {}".format(
     #     str(all_TP), str(all_FP), str(all_FN)))
 
-
-if __name__ == "__main__":
+def main(): 
+    
     logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)-8s %(message)s',
                         level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
-
-    # planogram_images = glob("Data/planogram_images/*.png")
-    # realogram_images = glob("Data/realogram_images/*.jpg")
 
     planogram_images = glob("Data_new/planograms/planograms_parsed_images/*.jpg")
     realogram_images = glob("Data_new/realograms/valid_jpg_format_realograms_images/*.jpg")
@@ -287,7 +299,14 @@ if __name__ == "__main__":
     # planogram_image_U_hard = 'Data_new/planograms/planograms_parsed_images/APPBARBSDMN24x150421.jpg'
     # planogram_images = [planogram_image_O_easy]
 
-    detect_all(planogram_images, realogram_images, show=True)
+    # detect_all(planogram_images, realogram_images, show=True)
     
 
+    poster_planogram_image = 'Data_new/planograms/planograms_parsed_images/APPBARBSDMN24x150421.jpg'
+    scene_image = '/home/arpalus/Work_Eldad/Arpalus_Code/Eldad-Local/arpalus-poster_detection/Data_new/realograms/valid_jpg_format_realograms_images/IMG_1559.jpg'
+    # template_matching_func(scene_image,poster_planogram_image,output_path='Output/template_matching_output',show = True)
+    # calc_ssim(poster_planogram_image,scene_image,show = True)
 
+if __name__ == "__main__":
+
+    main()
