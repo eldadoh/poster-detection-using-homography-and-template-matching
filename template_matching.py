@@ -6,6 +6,7 @@ import numpy as np
 from skimage.transform import resize as skimage_resize 
 from skimage.metrics import structural_similarity
 from features_utils import Plot_img_cv2,plots_opencv_image_pair,create_dir_with_override
+from opencv_util import Blur
 from matplotlib import pyplot as plt
 
 def calc_ssim(poster,scene,show = False,ssim_gray = False) : 
@@ -75,17 +76,18 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
     template_name = os.path.basename(template_path)
 
     img = cv2.imread(scene_path,0)
-    img2 = img.copy()
+    # img = Blur(img)
+    input_image = img.copy()
     # _, img = cv2.threshold(img, 0, 255,cv2.THRESH_OTSU)
     template = cv2.imread(template_path,0)
 
     w, h = template.shape[::-1]
 
-    methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED' ] 
-    # , 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+    methods = ['cv2.TM_CCOEFF_NORMED'] 
+    # 'cv2.TM_CCOEFF', , 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
 
     for i,meth in enumerate(methods):
-        img = img2.copy()
+        img = input_image.copy()
         method = eval(meth)
         res = cv2.matchTemplate(img,template,method)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
@@ -95,33 +97,31 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
         else:
             top_left = max_loc
 
-        
-        # bottom_right = (top_left[0] + w, top_left[1] + h)
+        bottom_right = (top_left[0] + w, top_left[1] + h)
 
-        # cv2.rectangle(img,top_left, bottom_right, 0, 30)
+        cv2.rectangle(img,top_left, bottom_right, 0, 30)
                 
-        loc = np.where(res >= 0.36) #THRESHOLD
-
-        for pt in zip(*loc[::-1]):
-                cv2.rectangle(img, pt, (pt[0] + w, pt[1] + h), (0,255,0), 3)
-                
+        # threshold = 0.8
+        # loc = np.where( res >= threshold)
+        # for pt in zip(*loc[::-1]):
+        #     cv2.rectangle(img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
+                        
         if show :
             
             Plot_img_cv2(img)
             Plot_img_cv2(res)
 
         if save:
+            
             path = os.path.join(output_path ,img_name + '_' + f'{template_name}' +'_' +f'{meth}' +'.jpg')
             cv2.imwrite(path,img)
 
-    return img , res 
+    return input_image , res 
 
 
 def template_matching_for_dir_of_images(templates_dir_path,scene_image,output_path,show = False , save = False):
 
-    if show :
-
-        create_dir_with_override(output_path)
+    create_dir_with_override(output_path)
 
     for img in glob.glob(templates_dir_path + '/*.jpg'): 
 
@@ -135,7 +135,7 @@ def main():
     scene_image = '/home/arpalus/Work_Eldad/Arpalus_Code/Eldad-Local/arpalus-poster_detection/Data_new/realograms/valid_jpg_format_realograms_images/IMG_1559.jpg'
     output_path = 'Output/template_matching_output'
 
-    #template_matching_func(scene_image,poster_planogram_image,output_path ,save=True)
+    #template_matching_func(scene_image,poster_planogram_image,output_path ,show=True, save=False)
 
     template_matching_for_dir_of_images(templates_dir_path,scene_image,output_path,show = False , save = True)
 

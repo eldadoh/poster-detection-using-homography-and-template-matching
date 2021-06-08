@@ -27,6 +27,29 @@ def pad_image_on_borders(img):
 
     return np.pad(img ,((2, 2), (2, 2),(0,0)), 'constant' , constant_values = (255))
 
+def find_global_min_and_max_in_single_chanel_array(array,mask = np.empty([])):
+
+    """ 
+        Finds the global minimum and maximum in an array.
+
+        The function cv::minMaxLoc finds the minimum and maximum element values and their positions.
+        The extremums are searched across the whole array or, 
+        if mask is not an empty array, in the specified array region.
+
+        The function do not work with multi-channel arrays. 
+        If you need to find minimum or maximum elements across all the channels, 
+        use Mat::reshape first to reinterpret the array as single-channel. 
+        Or you may extract the particular channel using either extractImageCOI , or mixChannels , or split . 
+
+        src	input single-channel array.
+        minVal	pointer to the returned minimum value; NULL is used if not required.
+        maxVal	pointer to the returned maximum value; NULL is used if not required.
+        minLoc	pointer to the returned minimum location (in 2D case); NULL is used if not required.
+        maxLoc	pointer to the returned maximum location (in 2D case); NULL is used if not required.
+        mask	optional mask used to select a sub-array. 
+    """ 
+    minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc( array, mask	)
+
 def drawKeyPts(img,kps,col,th,circle_visualization = False):
     
     for key_point in kps:
