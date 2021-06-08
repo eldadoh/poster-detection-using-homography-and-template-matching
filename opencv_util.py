@@ -4,7 +4,33 @@ from cv2 import BFMatcher as bf
 from matplotlib import pyplot as plt
 import os
 import glob
+from skimage.transform import resize as skimage_resize 
 
+def resize_image_to_multiple_scales(img_path, args ,output_path):
+    
+    """ 
+        args = list of downsampling ratio numbers 
+        ex : args = [2,4,8]
+    """
+    
+    img = cv2.imread(img_path)
+
+    h,w = img.shape[:2]
+
+    for arg in args : 
+        
+        resized_img = skimage_resize(img.copy(), ( h//arg , w // arg ), anti_aliasing=True )
+        
+        resized_img*=255 #convert from float[0-1] to uint8 [0-255] 
+        resized_img = resized_img.astype(np.uint8)
+        
+        h_,w_ = resized_img.shape[:2]
+
+        resized_image_name = os.path.basename(img_path)[:-len('.jpg')] + '_factor' + str(arg*arg) + '_size' +f'{h_}' + '_' +f'{w_}' +'.jpg'
+        resized_img_output_path  = os.path.join(output_path,resized_image_name)
+        # Plot_img_cv2(resized_img,resize_flag=False)
+        # cv2.imwrite(resized_img_output_path,resized_img)
+    
 
 def Blur(img, ker_size=(5, 5)):
     return cv2.GaussianBlur(img, ksize=ker_size, sigmaX=0)

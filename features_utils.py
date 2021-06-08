@@ -6,6 +6,9 @@ import glob
 from cv2 import BFMatcher as bf
 import shutil
 
+def calc_bbox_area(h_, w_):    
+    return h_ * w_ 
+
 def create_dir_with_override(dir_path):
     try : 
         if os.path.exists(dir_path):

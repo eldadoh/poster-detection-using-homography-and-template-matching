@@ -31,6 +31,7 @@ def resize_image_multiple_scales(img_path, args ,output_path):
         resized_img_output_path  = os.path.join(output_path,resized_image_name)
         # Plot_img_cv2(resized_img,resize_flag=False)
         # cv2.imwrite(resized_img_output_path,resized_img)
+        
 
 def main():
     
@@ -39,10 +40,10 @@ def main():
     OUTPUT_PATH = 'Resulotion_test_data/resized_images' 
     scene_test_image_android_apple = 'Resulotion_test_data/scene_test_images/IMG_1547_andriod_apple.jpg'
 
-    resize_image_multiple_scales(img_path_android, args = [1,2,4,8] ,output_path= OUTPUT_PATH)
-    resize_image_multiple_scales(img_path_apple, args = [1,2,4,8] ,output_path= OUTPUT_PATH)
+    # resize_image_multiple_scales(img_path_android, args = [1,2,4,8] ,output_path= OUTPUT_PATH)
+    # resize_image_multiple_scales(img_path_apple, args = [1,2,4,8] ,output_path= OUTPUT_PATH)
 
 
 if __name__ == "__main__" : 
-    main() 
-    # pass
+    # main() 
+    pass

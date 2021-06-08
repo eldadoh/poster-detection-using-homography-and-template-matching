@@ -216,8 +216,9 @@ def detect(realogram_image, show=False):
                 #     box_gt = (cur_gt_for_img[0][0], cur_gt_for_img[0][1], cur_gt_for_img[2][0], cur_gt_for_img[2][1])
                 #     iou = bb_intersection_over_union(box_det, box_gt)
 
+                bbox_area = h*w
                 print("Results for planogram_image_name = {} realogram_image_name = {} match_quality = {} match_num = {} d_area = {}".format(planogram_image_name, realogram_image_name, match_quality, match_num, d_area))
-                
+                print('BBOX AREA IS: ' +f'{bbox_area}')
                 if match_quality < MAX_MATCH_DIST and match_num > MIN_MATCH_NUM and d_area > MIN_DETECT_AREA:
                     
                     if show:
@@ -226,7 +227,7 @@ def detect(realogram_image, show=False):
                         # cv.putText(img_with_detection, planogram_image_name  + " " + str(int(match_quality)) + " " + str(int(match_num)) + " iou " + str(iou),  (0, 0 + 45), cv.FONT_HERSHEY_SIMPLEX, 1, (36,255,12), 2)
 
                         
-                        cv.putText(img_with_detection, planogram_image_name + " " + str(int(match_quality)) + " " + str(int(match_num)),  (0, 0 + 45), cv.FONT_HERSHEY_SIMPLEX, 1, (36, 255, 12), 2)
+                        # cv.putText(img_with_detection, planogram_image_name + " " + str(int(match_quality)) + " " + str(int(match_num)),  (0, 0 + 45), cv.FONT_HERSHEY_SIMPLEX, 1, (36, 255, 12), 2)
                         # plt.imshow(img_with_detection, 'gray'), plt.show() 
                         
                         draw_params = dict(matchColor=(0, 255, 0),  # draw matches in green color
@@ -236,7 +237,7 @@ def detect(realogram_image, show=False):
                         
                         img_with_matches = cv.drawMatches(img1, kp1, img_with_detection, kp2, good, None, **draw_params)
                         
-                        # Plot_img_cv2(cv.cvtColor(img_with_matches,cv.COLOR_BGR2RGB))
+                        Plot_img_cv2(cv.cvtColor(img_with_matches,cv.COLOR_BGR2RGB))
                         
                         #plt.imshow(img_with_matches, 'gray'), plt.show()
                     # if iou > iou_th: #TP
