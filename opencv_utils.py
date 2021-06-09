@@ -1,13 +1,15 @@
+import shutil 
+import itertools 
+import os
+import glob
 import numpy as np
 import cv2 
 from cv2 import BFMatcher as bf
 from matplotlib import pyplot as plt
-import os
-import glob
 from skimage.transform import resize as skimage_resize 
-from features_utils import Plot_img_cv2, plots_opencv_images_pair_from_dir
+from image_plots import Plot_img_cv2 ,plots_opencv_images_pair_from_dir
 
-def calc_hist_grayscale(img , show) : 
+def Calc_hist_grayscale(img , show) : 
     
     """
     Params:
@@ -28,7 +30,7 @@ def calc_hist_grayscale(img , show) :
 
     return hist     
 
-def calc_hist_rgb(img , show) : 
+def Calc_hist_rgb(img , show) : 
     
     color = ('b','g','r')
     
@@ -63,33 +65,39 @@ def resize_image_to_multiple_scales(img_path, args ,output_path):
         # Plot_img_cv2(resized_img,resize_flag=False)
         # cv2.imwrite(resized_img_output_path,resized_img)
     
-def match_keypoints_between_two_images(img1_path, img2_path):
+def Calc_and_match_keypoints_between_two_images(img1_path, img2_path , show = False):
     
     img1_name = os.path.basename(img1_path)
     img2_name = os.path.basename(img2_path)
 
-    imgA = cv2.imread(img1_path)
-    imgB = cv2.imread(img2_path)
+    img1 = cv2.imread(img1_path)
+    img2 = cv2.imread(img2_path)
 
     
-    grayA = cv2.cvtColor(imgA, cv2.COLOR_BGR2GRAY)
-    grayB = cv2.cvtColor(imgB, cv2.COLOR_BGR2GRAY)
+    gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+    gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 
 
     sift = cv2.SIFT_create()
-    kpA, desA = sift.detectAndCompute(grayA, None)
-    kpB, desB = sift.detectAndCompute(grayB, None)
+    kpA, desA = sift.detectAndCompute(gray1, None)
+    kpB, desB = sift.detectAndCompute(gray2, None)
 
     
     bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+
     matches = bf.match(desB, desB)
     matches = sorted(matches, key=lambda x: x.distance)
-    matched_image = cv2.drawMatches(imgA, kpA, imgB, kpB, matches, None, flags=2)
 
-    plt.imshow(cv2.cvtColor(matched_image, cv2.COLOR_BGR2RGB))
-    plt.show() 
 
-def find_global_min_and_max_in_single_chanel_array(array,mask = np.empty([])):
+    if show :
+
+        matched_image = cv2.drawMatches(img1, kpA, img2, kpB, matches, None, flags=2)
+        plt.imshow(cv2.cvtColor(matched_image, cv2.COLOR_BGR2RGB))
+        plt.show() 
+
+    return matches, kpA, desA,kpB, desB
+
+def Find_global_min_and_max_in_single_chanel_array(array,mask = np.empty([])):
 
     """ 
         Finds the global minimum and maximum in an array.
@@ -111,18 +119,6 @@ def find_global_min_and_max_in_single_chanel_array(array,mask = np.empty([])):
         mask	optional mask used to select a sub-array. 
     """ 
     minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(array, mask)
-
-
-def Blur(img, ker_size=(5, 5)):
-    return cv2.GaussianBlur(img, ksize=ker_size, sigmaX=0)
-
-
-def knn_matcher(des1,des2):
-    matches = bf.knnMatch(des1, des2, k=2) 
-    good = []
-    for (m1, m2) in matches: # for every descriptor, take closest two matches
-        if m1.distance < 0.7 * m2.distance: # best match has to be this much closer than second best
-            good.append(m1)
 
 
 

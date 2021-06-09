@@ -3,8 +3,8 @@ import cv2
 import os
 import shutil
 from matplotlib import pyplot as plt
-from features_utils import Resize, drawKeyPts, Plot_img_cv2,pad_image_on_borders,plots_opencv_image_pair
-from skimage.transform import rescale, downscale_local_mean
+from image_plots import drawKeyPts_single_image , Plot_img_cv2 , plots_opencv_image_pair
+from img_utils import Resize
 from skimage.transform import resize as skimage_resize 
 
 def resize_image_multiple_scales(img_path, args ,output_path):
