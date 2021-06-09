@@ -14,6 +14,8 @@ I didnt use all the func below for the assignment
 
 def threshold_otsu(img,show = False):
 
+    """input : grayscale 1d image """
+
     _,threshold_img = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
     if show : 
         
@@ -24,16 +26,28 @@ def threshold_otsu(img,show = False):
 def Blur(img, ker_size=(5, 5)):
     return cv2.GaussianBlur(img, ksize=ker_size, sigmaX=0)
 
-
-def Erode(img,structuring=cv2.MORPH_RECT,size = (3,3)):
+def erode(img,structuring=cv2.MORPH_RECT ,size = (3,3),iter = 1 ,show = False):
+    
     elem = cv2.getStructuringElement(structuring, size)
-    eroded = cv2.erode(img, elem)
+    
+    eroded = cv2.erode(img, elem, iterations=iter)
+    
+    if show : 
+
+        plot_img_cv2(eroded)
+
     return eroded
 
-
-def Dilate(img,structuring=cv2.MORPH_RECT,size = (3,3)):
+def dilate(img,structuring=cv2.MORPH_RECT ,size = (3,3),iter = 1 ,show = False):
+    
     elem = cv2.getStructuringElement(structuring, size)
-    dilated = cv2.dilate(img, elem)
+    
+    dilated = cv2.dilate(img, elem,iterations=iter)
+    
+    if show : 
+
+        plot_img_cv2(dilated)
+
     return dilated
 
 def Resize(image, width=None, height=None, inter=cv2.INTER_AREA):
@@ -54,7 +68,7 @@ def Resize(image, width=None, height=None, inter=cv2.INTER_AREA):
 
     return resized
 
-def Canny(image, sigma=0.33):
+def Canny(image, sigma=0.33,show = False):
 
     # compute the median of the single channel pixel intensities
     v = np.median(image)
@@ -62,9 +76,13 @@ def Canny(image, sigma=0.33):
     lower = int(max(0, (1.0 - sigma) * v))
     upper = int(min(255, (1.0 + sigma) * v))
     
-    edged = cv2.Canny(image, lower, upper)
+    canny_edged = cv2.Canny(image, lower, upper)
 
-    return edged
+    if show : 
+        
+        plot_img_cv2(canny_edged)
+
+    return canny_edged
 
 def pad_image_for_centering(path , Resize = False , Resize_Size = None ):
     """ 
