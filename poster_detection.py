@@ -6,7 +6,7 @@ import os
 import shutil
 import time
 import logging
-from features_utils import Resize, drawKeyPts, Plot_img_cv2,pad_image_on_borders,plots_opencv_image_pair
+from image_plots import Resize, drawKeyPts, Plot_img_cv2,pad_image_on_borders,plots_opencv_image_pair
 import numpy as np
 from template_matching import calc_ssim, template_matching_func
 from skimage.transform import rescale, downscale_local_mean

@@ -1,4 +1,4 @@
-from features_utils import Plot_img_cv2
+from image_plots import Plot_img_cv2
 import cv2
 import numpy as np
 

@@ -5,8 +5,8 @@ import cv2
 import numpy as np
 from skimage.transform import resize as skimage_resize 
 from skimage.metrics import structural_similarity
-from features_utils import Plot_img_cv2,plots_opencv_image_pair,create_dir_with_override
-from opencv_util import Blur
+from image_plots import Plot_img_cv2,plots_opencv_image_pair,create_dir_with_override
+from opencv_utils import Blur
 from matplotlib import pyplot as plt
 
 def calc_ssim(poster,scene,show = False,ssim_gray = False) : 
