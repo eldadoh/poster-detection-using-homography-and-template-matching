@@ -5,6 +5,38 @@ from matplotlib import pyplot as plt
 import os
 import glob
 from skimage.transform import resize as skimage_resize 
+from features_utils import Plot_img_cv2, plots_opencv_images_pair_from_dir
+
+def calc_hist_grayscale(img , show) : 
+    
+    """
+    Params:
+    images : it is the source image of type uint8 or float32. it should be given in square brackets, ie, "[img]".
+    channels : it is also given in square brackets. It is the index of channel for which we calculate histogram. For example, if input is grayscale image, its value is [0]. For color image, you can pass [0], [1] or [2] to calculate histogram of blue, green or red channel respectively.
+    mask : mask image. To find histogram of full image, it is given as "None". But if you want to find histogram of particular region of image, you have to create a mask image for that and give it as mask. (I will show an example later.)
+    histSize : this represents our BIN count. Need to be given in square brackets. For full scale, we pass [256].
+    ranges : this is our RANGE. Normally, it is [0,256].
+    """
+
+    img = cv2.imread(img)
+    img = cv2.cvtColor(img ,cv2.COLOR_BGR2GRAY)
+    hist = cv2.calcHist([img],[0],None,[256],[0,256])
+
+    if show : 
+        plt.hist(img.ravel(),256,[0,256]) 
+        plt.show()
+
+    return hist     
+
+def calc_hist_rgb(img , show) : 
+    
+    color = ('b','g','r')
+    
+    for i,col in enumerate(color):
+        histr = cv2.calcHist([img],[i],None,[256],[0,256])
+        plt.plot(histr,color = col)
+        plt.xlim([0,256])
+    plt.show()
 
 def resize_image_to_multiple_scales(img_path, args ,output_path):
     
@@ -31,12 +63,7 @@ def resize_image_to_multiple_scales(img_path, args ,output_path):
         # Plot_img_cv2(resized_img,resize_flag=False)
         # cv2.imwrite(resized_img_output_path,resized_img)
     
-
-def Blur(img, ker_size=(5, 5)):
-    return cv2.GaussianBlur(img, ksize=ker_size, sigmaX=0)
-
-
-def matchAB(img1_path, img2_path):
+def match_keypoints_between_two_images(img1_path, img2_path):
     
     img1_name = os.path.basename(img1_path)
     img2_name = os.path.basename(img2_path)
@@ -85,6 +112,9 @@ def find_global_min_and_max_in_single_chanel_array(array,mask = np.empty([])):
     """ 
     minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(array, mask)
 
+
+def Blur(img, ker_size=(5, 5)):
+    return cv2.GaussianBlur(img, ksize=ker_size, sigmaX=0)
 
 
 def knn_matcher(des1,des2):
