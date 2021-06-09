@@ -6,7 +6,7 @@ import os
 import glob
 from img_utils import Resize
 
-def Plot_img_cv2(img, str_name='_',cvtcolor_flag = False ,resize_flag = True,height=400):
+def plot_img_cv2(img, str_name='_',cvtcolor_flag = False ,resize_flag = True,height=400):
     if resize_flag:
         img = Resize(img,height)
     cv2.imshow(str_name, img)
@@ -60,7 +60,7 @@ def plots_opencv_images_pair_from_dir(dir1_path,dir2_path,output_dir_path = None
             cv2.imwrite(os.path.join(output_dir_path,img_name + '.jpg'), concatenated_image)
 
         if show :
-            Plot_img_cv2(concatenated_image)
+            plot_img_cv2(concatenated_image)
 
 
 def drawKeyPts_single_image(img,kps,col,th,circle_visualization = False,show = False):

@@ -17,7 +17,7 @@ def threshold_otsu(img,show = False):
     _,threshold_img = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
     if show : 
         
-        Plot_img_cv2(threshold_img)
+        plot_img_cv2(threshold_img)
 
     return threshold_img
 
@@ -333,7 +333,7 @@ def skeletonize(image, size, structuring=cv2.MORPH_RECT):
     # return the skeletonized image
     return skeleton
 
-def Plot_img_cv2(img, str_name='_',resize_flag = True,height=400):
+def plot_img_cv2(img, str_name='_',resize_flag = True,height=400):
     if resize_flag:
         img = Resize(img,height)
     cv2.imshow(str_name, img)
@@ -438,7 +438,7 @@ def Connected_Components(img):
         # set bg label to black
         labeled_img[label_hue == 0] = 0
 
-        Plot_img_cv2(labeled_img)
+        plot_img_cv2(labeled_img)
 
     imshow_components(labels_im)
 

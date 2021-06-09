@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from skimage.transform import resize as skimage_resize 
 from skimage.metrics import structural_similarity
-from image_plots import Plot_img_cv2,plots_opencv_image_pair,create_dir_with_override
+from image_plots import plot_img_cv2,plots_opencv_image_pair,create_dir_with_override
 from opencv_utils import Blur
 from matplotlib import pyplot as plt
 
@@ -29,7 +29,7 @@ def calc_ssim(poster,scene,show = False,ssim_gray = False) :
             
             diff = cv2.cvtColor(diff , cv2.COLOR_BGR2GRAY)
         
-        Plot_img_cv2(diff,resize_flag=True)
+        plot_img_cv2(diff,resize_flag=True)
 
     
 
@@ -108,8 +108,8 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
                         
         if show :
             
-            Plot_img_cv2(img)
-            Plot_img_cv2(res)
+            plot_img_cv2(img)
+            plot_img_cv2(res)
 
         if save:
             

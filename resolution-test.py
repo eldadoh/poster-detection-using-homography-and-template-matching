@@ -3,7 +3,7 @@ import cv2
 import os
 import shutil
 from matplotlib import pyplot as plt
-from image_plots import drawKeyPts_single_image , Plot_img_cv2 , plots_opencv_image_pair
+from image_plots import drawKeyPts_single_image , plot_img_cv2 , plots_opencv_image_pair
 from img_utils import Resize
 from skimage.transform import resize as skimage_resize 
 
@@ -29,7 +29,7 @@ def resize_image_multiple_scales(img_path, args ,output_path):
 
         resized_image_name = os.path.basename(img_path)[:-len('.jpg')] + '_factor' + str(arg*arg) + '_size' +f'{h_}' + '_' +f'{w_}' +'.jpg'
         resized_img_output_path  = os.path.join(output_path,resized_image_name)
-        # Plot_img_cv2(resized_img,resize_flag=False)
+        # plot_img_cv2(resized_img,resize_flag=False)
         # cv2.imwrite(resized_img_output_path,resized_img)
         
 
