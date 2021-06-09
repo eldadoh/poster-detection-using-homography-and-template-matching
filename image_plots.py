@@ -6,16 +6,28 @@ import os
 import glob
 from img_utils import Resize
 
-def plot_img_cv2(img, str_name='_',cvtcolor_flag = False ,resize_flag = True,height=400):
+def plot_img_cv2(img,resize_flag = True,height=400):
+    
     if resize_flag:
+
         img = Resize(img,height)
-    cv2.imshow(str_name, img)
+    
+    cv2.imshow('', img)
+
     k = cv2.waitKey(0)
+
     if k != ord('s'):
+
         cv2.destroyAllWindows()
+
     elif k == ord('s'):
-        cv2.imwrite(str_name+'.jpg', img)
+
         cv2.destroyAllWindows()
+
+        img_name = input('Enter image name for saving :\n')
+
+        cv2.imwrite(img_name +'.jpg', img)
+        
 
 def plots_opencv_image_pair(image1,image2,args,show = False):
     
