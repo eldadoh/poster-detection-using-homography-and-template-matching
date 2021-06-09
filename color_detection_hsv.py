@@ -1,4 +1,4 @@
-from image_plots import plot_img_cv2
+from image_plots import plot_img_opencv
 import cv2
 import numpy as np
 
@@ -46,7 +46,7 @@ def hsv_color_detection(img_path,Color,show = False):
 
     if show :
         
-        plot_img_cv2(output_img,height=500)
+        plot_img_opencv(output_img,height=500)
 
 
     return output_img 

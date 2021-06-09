@@ -3,7 +3,7 @@ import cv2
 import glob
 import os
 from opencv_utils import Calc_hist_grayscale
-from image_plots import plot_img_cv2
+from image_plots import plot_img_opencv
 from img_utils import dilate,threshold_otsu,calc_image_range
 from skimage.measure import label,regionprops,regionprops_table
 

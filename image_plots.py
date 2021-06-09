@@ -4,34 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import glob
-from img_utils import Resize
+from img_utils import plot_img_opencv
 
-def plot_img_cv2(img,resize_flag = True,height=400):
-    
-    if not img.dtype == np.uint8:
-        img *= 255  
-        img = img.astype(np.uint8)
-    
-    if resize_flag:
 
-        img = Resize(img,height)
-    
-    cv2.imshow('_', img)
-
-    k = cv2.waitKey(0)
-
-    if k != ord('s'):
-
-        cv2.destroyAllWindows()
-
-    elif k == ord('s'):
-
-        cv2.destroyAllWindows()
-
-        img_name = input('Enter image name for saving :\n')
-
-        cv2.imwrite(img_name +'.jpg', img)
-        
 
 def plots_opencv_image_pair(image1,image2,args,show = False):
     
@@ -76,26 +51,9 @@ def plots_opencv_images_pair_from_dir(dir1_path,dir2_path,output_dir_path = None
             cv2.imwrite(os.path.join(output_dir_path,img_name + '.jpg'), concatenated_image)
 
         if show :
-            plot_img_cv2(concatenated_image)
+            plot_img_opencv(concatenated_image)
 
 
-def drawKeyPts_single_image(img,kps,col,th,circle_visualization = False,show = False):
-    
-    for key_point in kps:
 
-        x=np.int(key_point.pt[0])
-        y=np.int(key_point.pt[1])
+
         
-        size = 0
-
-        if circle_visualization :
-            size = np.int(key_point.size)
-        
-        cv2.circle(img,(x,y),size, col,thickness=th, lineType=8, shift=0) 
-   
-    if show : 
-
-        plt.imshow(img)    
-        plt.plot()
-    
-    return img  

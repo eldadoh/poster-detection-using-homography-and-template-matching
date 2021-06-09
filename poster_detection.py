@@ -3,10 +3,10 @@ import cv2 as cv
 from matplotlib import pyplot as plt
 import glob
 import os
-import shutil
 import time
 import logging
-from image_plots import Resize, drawKeyPts, plot_img_cv2,pad_image_on_borders,plots_opencv_image_pair
+from opencv_utils import drawKeyPts_single_image
+from image_plots import plot_img_opencv
 import numpy as np
 from template_matching import calc_ssim, template_matching_func
 from skimage.transform import rescale, downscale_local_mean
@@ -99,7 +99,7 @@ def get_gt_for_img(realogram_image, filter_classes=[0], show=False):
                        cv.FONT_HERSHEY_SIMPLEX, 2, (36, 255, 12), 10)
 
     if show:
-        plot_img_cv2(img)
+        plot_img_opencv(img)
 
     return result
 
@@ -124,12 +124,12 @@ def load_model(planogram_images):
         kp1, des1 = detector_descriptor.detectAndCompute(img1, None)
 
         ###Plot###
-        poster_with_kp = drawKeyPts(img1.copy(), kp1, (0, 255, 0), 5)
+        poster_with_kp = drawKeyPts_single_image(img1.copy(), kp1, (0, 255, 0), 5)
         path_to_save_img = os.path.join('posters_keypoints_sift', os.path.basename(planogram_image))
         # cv.imwrite(path_to_save_img, poster_with_kp)
         ##########
 
-        # plot_img_cv2(cv.cvtColor(poster_with_kp,cv.COLOR_BGR2RGB))
+        # plot_img_opencv(cv.cvtColor(poster_with_kp,cv.COLOR_BGR2RGB))
         model[planogram_image_name] = [kp1, des1, img1, h, w, d]
 
     print('-------------Done building model dict------------------')
@@ -159,8 +159,8 @@ def detect(realogram_image, show=False):
     kp2, des2 = detector_descriptor.detectAndCompute(img2, None)
 
     ####Plot#####
-    poster_with_kp = drawKeyPts(img2.copy(), kp2, (0, 255, 0), 5)
-    # plot_img_cv2(cv.cvtColor(poster_with_kp,cv.COLOR_BGR2RGB))
+    poster_with_kp = drawKeyPts_single_image(img2.copy(), kp2, (0, 255, 0), 5)
+    # plot_img_opencv(cv.cvtColor(poster_with_kp,cv.COLOR_BGR2RGB))
     #############0
     
     FLANN_INDEX_KDTREE = 1
@@ -237,7 +237,7 @@ def detect(realogram_image, show=False):
                         
                         img_with_matches = cv.drawMatches(img1, kp1, img_with_detection, kp2, good, None, **draw_params)
                         
-                        plot_img_cv2(cv.cvtColor(img_with_matches,cv.COLOR_BGR2RGB))
+                        plot_img_opencv(cv.cvtColor(img_with_matches,cv.COLOR_BGR2RGB))
                         
                         #plt.imshow(img_with_matches, 'gray'), plt.show()
                     # if iou > iou_th: #TP

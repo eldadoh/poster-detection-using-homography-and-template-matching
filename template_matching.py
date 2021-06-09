@@ -5,8 +5,9 @@ import cv2
 import numpy as np
 from skimage.transform import resize as skimage_resize 
 from skimage.metrics import structural_similarity
-from image_plots import plot_img_cv2,plots_opencv_image_pair,create_dir_with_override
-from opencv_utils import Blur
+from image_plots import plot_img_opencv,plots_opencv_image_pair
+from img_utils import create_dir_with_override
+from img_utils import Blur
 from matplotlib import pyplot as plt
 
 def calc_ssim(poster,scene,show = False,ssim_gray = False) : 
@@ -29,7 +30,7 @@ def calc_ssim(poster,scene,show = False,ssim_gray = False) :
             
             diff = cv2.cvtColor(diff , cv2.COLOR_BGR2GRAY)
         
-        plot_img_cv2(diff,resize_flag=True)
+        plot_img_opencv(diff,resize_flag=True)
 
     
 
@@ -108,8 +109,8 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
                         
         if show :
             
-            plot_img_cv2(img)
-            plot_img_cv2(res)
+            plot_img_opencv(img)
+            plot_img_opencv(res)
 
         if save:
             
@@ -119,8 +120,12 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
     return input_image , res 
 
 
-def template_matching_for_dir_of_images(templates_dir_path,scene_image,output_path,show = False , save = False):
-
+def template_matching_for_dir_scene_images(templates_dir_path,scene_image,output_path,show = False , save = False):
+    """
+        do template matching:
+        - 1 scene image 
+        - several templates 
+    """
     create_dir_with_override(output_path)
 
     for img in glob.glob(templates_dir_path + '/*.jpg'): 
@@ -137,7 +142,7 @@ def main():
 
     #template_matching_func(scene_image,poster_planogram_image,output_path ,show=True, save=False)
 
-    template_matching_for_dir_of_images(templates_dir_path,scene_image,output_path,show = False , save = True)
+    template_matching_for_dir_scene_images(templates_dir_path,scene_image,output_path,show = False , save = True)
 
 if __name__ == "__main__":
 

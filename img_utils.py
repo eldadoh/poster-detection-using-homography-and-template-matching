@@ -12,6 +12,33 @@ Utility script for general image processing tasks
 I didnt use all the func below for the assignment
 """
 
+def plot_img_opencv(img,resize_flag = True,height=400):
+    
+    if not img.dtype == np.uint8:
+        img *= 255  
+        img = img.astype(np.uint8)
+    
+    if resize_flag:
+
+        img = Resize(img,height)
+    
+    cv2.imshow('_', img)
+
+    k = cv2.waitKey(0)
+
+    if k != ord('s'):
+
+        cv2.destroyAllWindows()
+
+    elif k == ord('s'):
+
+        cv2.destroyAllWindows()
+
+        img_name = input('Enter image name for saving :\n')
+
+        cv2.imwrite(img_name +'.jpg', img)
+        
+
 def calc_image_range(img,display = False):
 
     min_,max_ = np.min(img), np.max(img)
@@ -27,13 +54,15 @@ def threshold_otsu(img,show = False):
     """input : grayscale 1d image """
 
     _,threshold_img = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
+    
     if show : 
         
-        plot_img_cv2(threshold_img)
+        plot_img_opencv(threshold_img)
 
     return threshold_img
 
-def Blur(img, ker_size=(5, 5)):
+def Blur(img, ker_size=(3, 3)):
+
     return cv2.GaussianBlur(img, ksize=ker_size, sigmaX=0)
 
 def erode(img,structuring=cv2.MORPH_RECT ,size = (3,3),iter = 1 ,show = False):
@@ -44,7 +73,7 @@ def erode(img,structuring=cv2.MORPH_RECT ,size = (3,3),iter = 1 ,show = False):
     
     if show : 
 
-        plot_img_cv2(eroded)
+        plot_img_opencv(eroded)
 
     return eroded
 
@@ -56,7 +85,7 @@ def dilate(img,structuring=cv2.MORPH_RECT ,size = (3,3),iter = 1 ,show = False):
     
     if show : 
 
-        plot_img_cv2(dilated)
+        plot_img_opencv(dilated)
 
     return dilated
 
@@ -90,7 +119,7 @@ def Canny(image, sigma=0.33,show = False):
 
     if show : 
         
-        plot_img_cv2(canny_edged)
+        plot_img_opencv(canny_edged)
 
     return canny_edged
 
@@ -361,17 +390,6 @@ def skeletonize(image, size, structuring=cv2.MORPH_RECT):
     # return the skeletonized image
     return skeleton
 
-def plot_img_cv2(img, str_name='_',resize_flag = True,height=400):
-    if resize_flag:
-        img = Resize(img,height)
-    cv2.imshow(str_name, img)
-    k = cv2.waitKey(0)
-    if k != ord('s'):
-        cv2.destroyAllWindows()
-    elif k == ord('s'):
-        cv2.imwrite(str_name+'.jpg', img)
-        cv2.destroyAllWindows()
-
 def non_max_suppression(boxes, probs=None, overlapThresh=0.3):
 
     # if there are no boxes, return an empty list
@@ -466,7 +484,7 @@ def Connected_Components(img):
         # set bg label to black
         labeled_img[label_hue == 0] = 0
 
-        plot_img_cv2(labeled_img)
+        plot_img_opencv(labeled_img)
 
     imshow_components(labels_im)
 

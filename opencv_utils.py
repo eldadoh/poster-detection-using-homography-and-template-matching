@@ -1,5 +1,5 @@
-import shutil 
-import itertools 
+import shutil
+import itertools
 import os
 import glob
 import numpy as np
@@ -7,7 +7,110 @@ import cv2
 from cv2 import BFMatcher as bf
 from matplotlib import pyplot as plt
 from skimage.transform import resize as skimage_resize 
-from image_plots import plot_img_cv2 ,plots_opencv_images_pair_from_dir
+from image_plots import plot_img_opencv ,plots_opencv_images_pair_from_dir
+from collections import defaultdict
+
+def check_diff_feature_extractors_performence_on_singel_image(img_path,display = False):
+
+    """
+        applying the next feature extractors : ['SIFT','ORB','FAST', 'SIMPLE_BLOB_DETECTOR']
+        returns key_points_dict[nkeypoints,keypoints , descriptors]
+    """
+    img = cv2.imread(img_path)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    key_points_dict = defaultdict(list)
+
+    feature_extractor_list = ['SIFT','ORB','SIMPLE_BLOB_DETECTOR']
+
+    for feature_extractor in feature_extractor_list : 
+
+        if feature_extractor == 'SIFT' :
+            """ 
+            (nfeatures=..., nOctaveLayers=..., contrastThreshold=..., edgeThreshold=..., sigma=...)
+            """ 
+            SIFT = cv2.SIFT_create()
+            kps, des = SIFT.detectAndCompute(gray, None)
+            nKeypoints = len(kps)
+            key_points_dict['SIFT'].append([nKeypoints,kps,des])
+
+        elif feature_extractor == 'ORB':
+
+            ORB = cv2.ORB_create()
+            kps, des = ORB.detectAndCompute(gray, None)
+            nKeypoints = len(kps)
+            key_points_dict['ORB'].append([nKeypoints,kps,des])
+
+        elif feature_extractor == 'SIMPLE_BLOB_DETECTOR':
+
+            params = cv2.SimpleBlobDetector_Params()
+
+            params.minThreshold = 10
+            params.maxThreshold = 200
+            params.filterByArea = True
+            params.minArea = 1500
+            params.filterByCircularity = True
+            params.minCircularity = 0.1
+            params.filterByConvexity = True
+            params.minConvexity = 0.87
+            params.filterByInertia = True
+            params.minInertiaRatio = 0.01
+
+            SimpleBlobDetector = cv2.SimpleBlobDetector_create(params)
+
+            kps = SimpleBlobDetector.detect(gray)
+            nKeypoints = len(kps)
+            des = None
+            key_points_dict['SIMPLE_BLOB_DETECTOR'].append([nKeypoints,kps,des])
+
+        else :
+            continue
+
+    if display : 
+        
+        for key in key_points_dict.keys():
+
+            print(f'module: {key} Number of key point extracted : {key_points_dict[key][0][0]}')
+
+    return key_points_dict
+
+
+def drawKeyPts_single_image(img_path,feature_extractor = 'SIFT' ,col = (0,0,255),th = 5 ,circle_visualization = False,show = False,save = False,output_dir_path = None,return_key_points_count = False):
+    """ 
+        using SIFT 
+    """
+    img = cv2.imread(img_path)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    sift = cv2.SIFT_create()
+    kps, des = sift.detectAndCompute(gray, None)
+   
+    for key_point in kps:
+
+        x=np.int(key_point.pt[0])
+        y=np.int(key_point.pt[1])
+        
+        size = 0
+
+        if circle_visualization :
+            size = np.int(key_point.size)
+        
+        cv2.circle(img,(x,y),size, col,thickness=th, lineType=8, shift=0) 
+   
+    if show : 
+
+        plt.imshow(img)    
+        plt.plot()
+
+    if save and output_dir_path is not None : 
+        save_path = os.path.join(output_dir_path, 'key_points_' + os.path.basename(img_path))
+        cv2.imwrite(save_path,img)
+    
+    if return_key_points_count :
+        print(f'detect {len(kps)} keypoints in image : {os.path.basename(img_path)}')
+    return img, kps, des 
+
+
 
 def Calc_and_Plot_matched_keypoints_between_two_images(img1_path, img2_path , show = False):
     
@@ -101,7 +204,7 @@ def resize_image_to_multiple_scales(img_path, args ,output_path,show=False, save
         resized_img_output_path  = os.path.join(output_path,resized_image_name)
 
         if show :    
-            plot_img_cv2(resized_img,resize_flag=False)
+            plot_img_opencv(resized_img,resize_flag=False)
         if save : 
             cv2.imwrite(resized_img_output_path,resized_img)
 
