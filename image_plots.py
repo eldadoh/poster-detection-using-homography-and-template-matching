@@ -8,11 +8,15 @@ from img_utils import Resize
 
 def plot_img_cv2(img,resize_flag = True,height=400):
     
+    if not img.dtype == np.uint8:
+        img *= 255  
+        img = img.astype(np.uint8)
+    
     if resize_flag:
 
         img = Resize(img,height)
     
-    cv2.imshow('', img)
+    cv2.imshow('_', img)
 
     k = cv2.waitKey(0)
 

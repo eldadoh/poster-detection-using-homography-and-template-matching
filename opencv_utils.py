@@ -9,6 +9,43 @@ from matplotlib import pyplot as plt
 from skimage.transform import resize as skimage_resize 
 from image_plots import plot_img_cv2 ,plots_opencv_images_pair_from_dir
 
+def Calc_and_Plot_matched_keypoints_between_two_images(img1_path, img2_path , show = False):
+    
+    """
+       defualt feature extractor is SIFT
+       return matches, kpA, desA,kpB, desB
+    """
+
+    img1_name = os.path.basename(img1_path)
+    img2_name = os.path.basename(img2_path)
+
+    img1 = cv2.imread(img1_path)
+    img2 = cv2.imread(img2_path)
+
+    
+    gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+    gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+
+
+    sift = cv2.SIFT_create()
+    kpA, desA = sift.detectAndCompute(gray1, None)
+    kpB, desB = sift.detectAndCompute(gray2, None)
+
+    
+    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+
+    matches = bf.match(desB, desB)
+    matches = sorted(matches, key=lambda x: x.distance)
+
+
+    if show :
+
+        matched_image = cv2.drawMatches(img1, kpA, img2, kpB, matches, None, flags=2)
+        plt.imshow(cv2.cvtColor(matched_image, cv2.COLOR_BGR2RGB))
+        plt.show() 
+
+    return matches, kpA, desA,kpB, desB
+
 def Calc_hist_grayscale(img , show) : 
     
     """
@@ -40,7 +77,7 @@ def Calc_hist_rgb(img , show) :
         plt.xlim([0,256])
     plt.show()
 
-def resize_image_to_multiple_scales(img_path, args ,output_path):
+def resize_image_to_multiple_scales(img_path, args ,output_path,show=False, save= False):
     
     """ 
         args = list of downsampling ratio numbers 
@@ -62,63 +99,11 @@ def resize_image_to_multiple_scales(img_path, args ,output_path):
 
         resized_image_name = os.path.basename(img_path)[:-len('.jpg')] + '_factor' + str(arg*arg) + '_size' +f'{h_}' + '_' +f'{w_}' +'.jpg'
         resized_img_output_path  = os.path.join(output_path,resized_image_name)
-        # plot_img_cv2(resized_img,resize_flag=False)
-        # cv2.imwrite(resized_img_output_path,resized_img)
-    
-def Calc_and_match_keypoints_between_two_images(img1_path, img2_path , show = False):
-    
-    img1_name = os.path.basename(img1_path)
-    img2_name = os.path.basename(img2_path)
 
-    img1 = cv2.imread(img1_path)
-    img2 = cv2.imread(img2_path)
-
-    
-    gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-    gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-
-
-    sift = cv2.SIFT_create()
-    kpA, desA = sift.detectAndCompute(gray1, None)
-    kpB, desB = sift.detectAndCompute(gray2, None)
-
-    
-    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-
-    matches = bf.match(desB, desB)
-    matches = sorted(matches, key=lambda x: x.distance)
-
-
-    if show :
-
-        matched_image = cv2.drawMatches(img1, kpA, img2, kpB, matches, None, flags=2)
-        plt.imshow(cv2.cvtColor(matched_image, cv2.COLOR_BGR2RGB))
-        plt.show() 
-
-    return matches, kpA, desA,kpB, desB
-
-def Find_global_min_and_max_in_single_chanel_array(array,mask = np.empty([])):
-
-    """ 
-        Finds the global minimum and maximum in an array.
-
-        The function cv::minMaxLoc finds the minimum and maximum element values and their positions.
-        The extremums are searched across the whole array or, 
-        if mask is not an empty array, in the specified array region.
-
-        The function do not work with multi-channel arrays. 
-        If you need to find minimum or maximum elements across all the channels, 
-        use Mat::reshape first to reinterpret the array as single-channel. 
-        Or you may extract the particular channel using either extractImageCOI , or mixChannels , or split . 
-
-        src	input single-channel array.
-        minVal	pointer to the returned minimum value; NULL is used if not required.
-        maxVal	pointer to the returned maximum value; NULL is used if not required.
-        minLoc	pointer to the returned minimum location (in 2D case); NULL is used if not required.
-        maxLoc	pointer to the returned maximum location (in 2D case); NULL is used if not required.
-        mask	optional mask used to select a sub-array. 
-    """ 
-    minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(array, mask)
+        if show :    
+            plot_img_cv2(resized_img,resize_flag=False)
+        if save : 
+            cv2.imwrite(resized_img_output_path,resized_img)
 
 
 

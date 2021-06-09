@@ -12,6 +12,16 @@ Utility script for general image processing tasks
 I didnt use all the func below for the assignment
 """
 
+def calc_image_range(img,display = False):
+
+    min_,max_ = np.min(img), np.max(img)
+
+    if display : 
+        
+        print(min_,max_)
+        
+    return (min_,max_)
+
 def threshold_otsu(img,show = False):
 
     """input : grayscale 1d image """
@@ -462,7 +472,6 @@ def Connected_Components(img):
 
     return num_labels, labels_im
 
-
 def create_dir_with_override(dir_path):
     try : 
         if os.path.exists(dir_path):
@@ -471,3 +480,30 @@ def create_dir_with_override(dir_path):
     except Exception as e : 
         print(e)
         print('Could not create the desired dir with the corersponding dir path : \n' + f'{dir_path}')
+
+def Find_global_min_and_max_in_single_chanel_array(array,mask = np.empty([])):
+
+    """ 
+        Finds the global minimum and maximum in an array.
+
+        The function cv::minMaxLoc finds the minimum and maximum element values and their positions.
+        The extremums are searched across the whole array or, 
+        if mask is not an empty array, in the specified array region.
+
+        The function do not work with multi-channel arrays. 
+        If you need to find minimum or maximum elements across all the channels, 
+        use Mat::reshape first to reinterpret the array as single-channel. 
+        Or you may extract the particular channel using either extractImageCOI , or mixChannels , or split . 
+
+        src	input single-channel array.
+        minVal	pointer to the returned minimum value; NULL is used if not required.
+        maxVal	pointer to the returned maximum value; NULL is used if not required.
+        minLoc	pointer to the returned minimum location (in 2D case); NULL is used if not required.
+        maxLoc	pointer to the returned maximum location (in 2D case); NULL is used if not required.
+        mask	optional mask used to select a sub-array. 
+    """ 
+
+    minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(array, mask)
+
+
+
