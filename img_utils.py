@@ -46,6 +46,7 @@ def resize_img1_according_to_img2(img1_path,img2_path,output_dir_path = None, sa
 def plot_img_opencv(img,resize_flag = True,width=400):
     
     if not img.dtype == np.uint8:
+
         img *= 255  
         img = img.astype(np.uint8)
     
@@ -71,6 +72,18 @@ def plot_img_opencv(img,resize_flag = True,width=400):
         
     return img 
 
+def display_zip_object(zip_item , show_length = False) : 
+    
+    if show_length :
+    
+        length_ = len(list(zip_item))
+        
+        return length_ , list(zip_item)
+    
+    else :         
+        
+        return list(zip_item)
+
 def Normalize_float_binary_to_uint8_img(img):
 
     if np.max(img) <= (1 + 1e-2): 
@@ -79,6 +92,10 @@ def Normalize_float_binary_to_uint8_img(img):
         img = img.astype(np.uint8)
 
     return img
+
+def convert_dtype_to_uint8(img):
+
+    return cv2.normalize(res, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
 
 def calc_image_range(img,display = False):
 
@@ -95,6 +112,18 @@ def threshold_otsu(img_path,show = False):
     """input : grayscale 1d image """
 
     img = cv2.imread(img_path,0)
+    _,threshold_img = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
+    
+    if show : 
+        
+        plot_img_opencv(threshold_img)
+
+    return threshold_img
+
+def threshold_otsu_from_img(img,show = False):
+
+    """input : grayscale 1d image """
+
     _,threshold_img = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
     
     if show : 

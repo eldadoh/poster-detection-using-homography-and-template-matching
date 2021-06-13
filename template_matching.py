@@ -6,7 +6,7 @@ import numpy as np
 from skimage.transform import resize as skimage_resize 
 from skimage.metrics import structural_similarity
 from image_plots import plots_opencv_image_pair
-from img_utils import create_dir_with_override, threshold_otsu
+from img_utils import create_dir_with_override, threshold_otsu,threshold_otsu_from_img,convert_dtype_to_uint8
 from img_utils import Blur,resize_img1_according_to_img2
 from matplotlib import pyplot as plt
 from img_utils import plot_img_opencv
@@ -64,7 +64,7 @@ def find_maxima_points_on_corr_map_of_template_matching_above_th (img,template,t
     results = zip(*loc[::-1])
     return results
     
-def template_matching_func(scene_path,template_path,output_path,show = False,save = False):
+def template_matching_func(scene_path,template_path,output_path,show = False,save = False,th = 0.5):
 
     """
         Input : scene image ,template 
@@ -89,8 +89,32 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
     for i,meth in enumerate(methods):
         output_img = img.copy()
         method = eval(meth)
-        res = cv2.matchTemplate(output_img,template,method)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+        
+    
+        try:
+            
+            res = cv2.matchTemplate(output_img,template,method)
+            plot_img_opencv(res)
+            # res = cv2.normalize(res, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+            # res = threshold_otsu_from_img(res)
+            plot_img_opencv(res)
+            res = cv2.GaussianBlur(res, (5,5),0)
+            plot_img_opencv(res)
+            loc = np.where( res >= th)
+            res = zip(*loc[::-1])
+            # plot_img_opencv(res)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+            print(f'the coord of the max_loc is : {max_loc} with score of {max_val}')
+            
+        except Exception as e : 
+            print(f'didnt achieved threshold of {th} ! picking the highest score point below the threshold ')
+            
+            res = cv2.matchTemplate(output_img,template,method)
+            plot_img_opencv(res)
+            res = cv2.GaussianBlur(res, (3,3), 0)
+            plot_img_opencv(res)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+            print(f'the coord of the max_loc is : {max_loc} with score of {max_val}')
         
         if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
             top_left = min_loc
@@ -175,22 +199,22 @@ def main():
 
           ########### DEBUG ---- scene_new_images_resized_according_to_template ##############
       
-    scene_new_images_resized_according_to_template_dir_path = 'Resulotion_test_data/Second EXP - big letters Y U/scene_new_images_resized_according_to_template'
-    template_matching_exp3_scaling_the_scene_according_to_template_dir_path = 'Resulotion_test_data/Second EXP - big letters Y U/template_matching_exp3_scaling_the_scene_according_to_template_dir_path'
+    # scene_new_images_resized_according_to_template_dir_path = 'Resulotion_test_data/Second EXP - big letters Y U/scene_new_images_resized_according_to_template'
+    # template_matching_exp3_scaling_the_scene_according_to_template_dir_path = 'Resulotion_test_data/Second EXP - big letters Y U/template_matching_exp3_scaling_the_scene_according_to_template_dir_path'
     
-    #for debug
-    templates_dir_path = 'Resulotion_test_data/Second EXP - big letters Y U/DEBUG_template_matching_exp3_scaling_the_scene_according_to_template_dir_path' 
+    # #for debug
+    # templates_dir_path = 'Resulotion_test_data/Second EXP - big letters Y U/DEBUG_template_matching_exp3_scaling_the_scene_according_to_template_dir_path' 
     
-    for scene in sorted(glob.glob(scene_dir_path + '/*.jpg')):
+    # for scene in sorted(glob.glob(scene_dir_path + '/*.jpg')):
         
-        #for debug
-        scene = '20210604_115029_resized_according_to_APPBARBSBMN24x150421.jpg'
+    #     #for debug
+    #     scene = '20210604_115029_resized_according_to_APPBARBSBMN24x150421.jpg'
 
-        for template in sorted(glob.glob(templates_dir_path + '/*.jpg')):
+    #     for template in sorted(glob.glob(templates_dir_path + '/*.jpg')):
 
-            _, __, scene_resized_img_path ,template_img_path = resize_img1_according_to_img2(scene , template ,output_dir_path=scene_new_images_resized_according_to_template_dir_path,save= True)
+    #         _, __, scene_resized_img_path ,template_img_path = resize_img1_according_to_img2(scene , template ,output_dir_path=scene_new_images_resized_according_to_template_dir_path,save= True)
             
-            template_matching_func(scene_resized_img_path,template_img_path,output_path = template_matching_exp3_scaling_the_scene_according_to_template_dir_path,show = True,save = True)
+    #         template_matching_func(scene_resized_img_path,template_img_path,output_path = template_matching_exp3_scaling_the_scene_according_to_template_dir_path,show = True,save = True)
 
      #########################################################################
 if __name__ == "__main__":

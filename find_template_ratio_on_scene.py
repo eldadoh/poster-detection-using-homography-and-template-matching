@@ -2,7 +2,7 @@ import os
 import cv2
 import glob 
 import numpy as np 
-from img_utils import plot_img_opencv,Normalize_float_binary_to_uint8_img,calc_image_range
+from img_utils import plot_img_opencv,Normalize_float_binary_to_uint8_img ,calc_image_range
 from skimage.transform import resize as skimage_resize 
 from template_matching import template_matching_func
 
@@ -56,7 +56,7 @@ def main():
 
     for scene_downsampled_img_path in sorted(glob.glob(downsampled_scene_dir_path_O_ + '/*.jpg')):
     
-        template_matching_func(scene_downsampled_img_path,template_path_O_,output_path = downsampled_template_matching_results_O_,show = False,save = True)
+        template_matching_func(scene_downsampled_img_path,template_path_O_,output_path = downsampled_template_matching_results_O_,show = False,save = True,th = 0.5)
 
     
 if __name__ == "__main__":
