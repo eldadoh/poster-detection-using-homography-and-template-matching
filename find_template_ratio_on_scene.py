@@ -2,7 +2,7 @@ import os
 import cv2
 import glob 
 import numpy as np 
-from img_utils import plot_img_opencv,Normalize_float_binary_to_uint8_img ,calc_image_range
+from img_utils import plot_img_opencv,Normalize_float_binary_to_uint8_img ,calc_image_range,convert_dtype_to_uint8
 from skimage.transform import resize as skimage_resize 
 from template_matching import template_matching_func
 
@@ -23,8 +23,9 @@ def downsample_1_scene_according_1_template(scene_path,template_path,save = Fals
         h_scene_new , w_scene_new  = np.ceil(scale_ratio * h_w_template_array)
         
         downsampled_scene = skimage_resize(scene.copy(), ( h_scene_new, w_scene_new), anti_aliasing=True )
-        downsampled_scene = Normalize_float_binary_to_uint8_img(downsampled_scene)
-        
+        downsampled_scene = convert_dtype_to_uint8(downsampled_scene)
+        # downsampled_scene = Normalize_float_binary_to_uint8_img(downsampled_scene)
+
         scene_downsampled_name = f'{scene_name}_downsampled_to_{h_scene_new}_{w_scene_new}.jpg'
         scene_downsampled_name = os.path.join(output_path , scene_downsampled_name)
 
@@ -56,7 +57,7 @@ def main():
 
     for scene_downsampled_img_path in sorted(glob.glob(downsampled_scene_dir_path_O_ + '/*.jpg')):
     
-        template_matching_func(scene_downsampled_img_path,template_path_O_,output_path = downsampled_template_matching_results_O_,show = False,save = True,th = 0.5)
+        template_matching_func(scene_downsampled_img_path,template_path_O_,output_path = downsampled_template_matching_results_O_,show = True,save = True,th = 0.5)
 
     
 if __name__ == "__main__":

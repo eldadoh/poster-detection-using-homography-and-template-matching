@@ -7,8 +7,13 @@ import glob
 from img_utils import plot_img_opencv
 from skimage.transform import resize as skimage_resize 
         
-def plots_opencv_image_pair(image1,image2,show = False):
+def plots_opencv_image_pair(image1,image2,show = False,convert_to_uint8 = True):
     
+    """
+        There is conversion to uint8 so plots only black-white images 
+        conversion due to different images.dtypes 
+    """
+
     if image1.shape != image2.shape : 
 
         if image1.size <= image2.size :
@@ -25,39 +30,42 @@ def plots_opencv_image_pair(image1,image2,show = False):
             else:
                 image2 = skimage_resize(image2.copy(), ( image1.shape[0] , image1.shape[1] ), anti_aliasing=True )
 
+    if convert_to_uint8 : 
 
-    if image1.dtype != np.uint8:
-        image1 *= 255
-        image1 = image1.astype(np.uint8)
+        if image1.dtype != np.uint8:
+            image1 *= 255
+            image1 = image1.astype(np.uint8)
 
-    if image2.dtype != np.uint8:
-        image2 *= 255
-        image2 = image2.astype(np.uint8)
+        if image2.dtype != np.uint8:
+            image2 *= 255
+            image2 = image2.astype(np.uint8)
 
-    try:
+    # try:
         
-        concatenated_image = np.hstack([image1,image2])
-        
-        if show :
-
-            concatenated_image = cv2.cvtColor(concatenated_image,cv2.COLOR_BGR2RGB)
-            plt.imshow(concatenated_image)
-            plt.show()
-
-        return concatenated_image
+    concatenated_image = np.hstack([image1,image2])
     
-    except Exception as e: 
-        print('My exception : ')
-        print(type(e),e)
-        print(f'problem images are {image1}_and_{image2}')
-        
     if show :
 
-            concatenated_image = cv2.cvtColor(concatenated_image,cv2.COLOR_BGR2RGB)
-            plt.imshow(concatenated_image)
-            plt.show()
+        # concatenated_image = cv2.cvtColor(concatenated_image,cv2.COLOR_BGR2RGB)
+        plt.imshow(concatenated_image)
+        plt.xticks([])
+        plt.yticks([])
+        plt.show()
 
     return concatenated_image
+
+    # except Exception as e: 
+    #     print('My exception : ')
+    #     print(type(e),e)
+    #     print(f'problem images are {image1}_and_{image2}')
+        
+    # if show :
+
+    #         concatenated_image = cv2.cvtColor(concatenated_image,cv2.COLOR_BGR2RGB)
+    #         plt.imshow(concatenated_image)
+    #         plt.show()
+
+    # return concatenated_image
     
 
 def plots_opencv_images_pair_from_dir(dir1_path,dir2_path,output_dir_path = None,show = False):

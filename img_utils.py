@@ -30,7 +30,10 @@ def resize_img1_according_to_img2(img1_path,img2_path,output_dir_path = None, sa
     img2 = cv2.imread(img2_path,0)
     
     img1_resized_according_to_img2 = skimage_resize(img1.copy(), ( img2.shape[0], img2.shape[1]), anti_aliasing=True )
-    img1_resized_according_to_img2 = Normalize_float_binary_to_uint8_img(img1_resized_according_to_img2)
+    img1_resized_according_to_img2 = convert_dtype_to_uint8(img1_resized_according_to_img2)
+    # img1_resized_according_to_img2 = Normalize_float_binary_to_uint8_img(img1_resized_according_to_img2)
+    
+
     
     if save:
         
@@ -43,8 +46,9 @@ def resize_img1_according_to_img2(img1_path,img2_path,output_dir_path = None, sa
 
 
 
-def plot_img_opencv(img,resize_flag = True,width=400):
+def plot_img_opencv(image,resize_flag = True,width=400):
     
+    img = image.copy()
     if not img.dtype == np.uint8:
 
         img *= 255  
@@ -95,7 +99,20 @@ def Normalize_float_binary_to_uint8_img(img):
 
 def convert_dtype_to_uint8(img):
 
-    return cv2.normalize(res, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+    """ 
+    def normalize8(I):
+
+        mn = I.min()
+        mx = I.max()
+
+        mx -= mn
+
+        I = ((I - mn)/mx) * 255
+        return I.astype(np.uint8)
+    """ 
+
+
+    return cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
 
 def calc_image_range(img,display = False):
 
@@ -200,6 +217,18 @@ def Canny(image, sigma=0.33,show = False):
         plot_img_opencv(canny_edged)
 
     return canny_edged
+
+def find_maxima_points_on_corr_map_of_template_matching_above_th (img,template,th) : 
+    
+    result = cv2.matchTemplate(img, template, cv2.TM_CCOEFF_NORMED)
+    loc = np.where( result >= th) #return [coord_y_arr , coord_x_arr]
+    results = zip(*loc[::-1])     #fliping to [coord_x_arr , coord_y_arr]
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(results) #gets only single changel array
+    
+    return results,min_val, max_val, min_loc, max_loc
+            
+
+
 
 def pad_image_for_centering(path , Resize = False , Resize_Size = None ):
     """ 

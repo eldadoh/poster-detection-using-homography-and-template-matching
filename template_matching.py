@@ -79,7 +79,6 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
 
     img = cv2.imread(scene_path,0)
     template = cv2.imread(template_path,0)
-    input_image = img.copy()
     
     w, h = template.shape[::-1]
 
@@ -94,27 +93,32 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
         try:
             
             res = cv2.matchTemplate(output_img,template,method)
-            plot_img_opencv(res)
+            # plot_img_opencv(res)
             # res = cv2.normalize(res, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
             # res = threshold_otsu_from_img(res)
-            plot_img_opencv(res)
-            res = cv2.GaussianBlur(res, (5,5),0)
-            plot_img_opencv(res)
-            loc = np.where( res >= th)
-            res = zip(*loc[::-1])
             # plot_img_opencv(res)
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-            print(f'the coord of the max_loc is : {max_loc} with score of {max_val}')
+            res = cv2.GaussianBlur(res, (5,5),0)
+            # plot_img_opencv(res)
+            loc = np.where( res >= 0.3) #return [coord_y_arr , coord_x_arr]
+            res = zip(*loc[::-1])      #fliping to [coord_x_arr , coord_y_arr]
+            # plot_img_opencv(res)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res) #gets only single changel array
+            print(f'Achieved threshold of {th} !')
+            print(f'Coord of the max_loc is : {max_loc} with Score of {max_val}')
             
         except Exception as e : 
-            print(f'didnt achieved threshold of {th} ! picking the highest score point below the threshold ')
+
+            #print(f'Exception type : \n{type(e)} , \nException msg:\n {e}')
+            print(f'Didnt achieved threshold of {th} ! picking the highest score point below the threshold ')
             
             res = cv2.matchTemplate(output_img,template,method)
-            plot_img_opencv(res)
+            #plot_img_opencv(res)
             res = cv2.GaussianBlur(res, (3,3), 0)
-            plot_img_opencv(res)
+            #plot_img_opencv(res)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
             print(f'the coord of the max_loc is : {max_loc} with score of {max_val}')
+        
+
         
         if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
             top_left = min_loc
@@ -143,7 +147,7 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
             path = os.path.join(output_path ,img_name + '_' + f'{template_name}' +'_' +f'{meth}'+'_corr_map_score' +'.jpg')
             cv2.imwrite(path,pair_image_corr_map_score_matching_result_)
 
-    return output_img , res 
+    return img_rgb , res 
 
 
 
