@@ -43,6 +43,21 @@ def calc_ssim(poster,scene,show = False,ssim_gray = False) :
 #     results = zip(*loc[::-1])
 #     return results
     
+
+
+def template_matching_for_1_scene_several_templates_images(templates_dir_path,scene_image,output_path,show = False , save = False):
+    """
+        do template matching:
+        - 1 scene image 
+        - several templates 
+    """
+    
+    # create_dir_with_override(output_path)
+
+    for img in glob.glob(templates_dir_path + '/*.jpg'): 
+        scene_image = (scene_image)
+        template_matching_func(scene_image,img,output_path,save = True)
+
 def find_maxima_points_on_corr_map_of_template_matching_above_th (img,template,th) : 
     result = cv2.matchTemplate(img, template, cv2.TM_CCOEFF_NORMED)
     loc = np.where( result >= th)
@@ -59,17 +74,20 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
     img_name = os.path.basename(scene_path)[:-len('.jpg')]
     template_name = os.path.basename(template_path)[:-len('.jpg')]
 
+    img_rgb = cv2.imread(scene_path)
+    template_rgb = cv2.imread(template_path)
+
     img = cv2.imread(scene_path,0)
     template = cv2.imread(template_path,0)
     input_image = img.copy()
     
     w, h = template.shape[::-1]
 
-    methods = ['cv2.TM_CCOEFF'] 
-    # 'cv2.TM_CCOEFF', , 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+    methods = ['cv2.TM_CCOEFF_NORMED'] 
+    # 'cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
 
     for i,meth in enumerate(methods):
-        output_img = input_image.copy()
+        output_img = img.copy()
         method = eval(meth)
         res = cv2.matchTemplate(output_img,template,method)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
@@ -81,42 +99,30 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
 
         bottom_right = (top_left[0] + w, top_left[1] + h)
 
-        cv2.rectangle(output_img,top_left, bottom_right, 0, 30)   
+        cv2.rectangle(img_rgb,top_left, bottom_right, 0, 30)   
                         
         if show :
             
             # plot_img_opencv(img)
             # res = plot_img_opencv(res)
-            pair_image_template_matching_result = plots_opencv_image_pair(template,img,show = True)
-            pair_image_template_matching_result_ = plots_opencv_image_pair(res,img,show = True)
+            pair_image_template_matching_result = plots_opencv_image_pair(template_rgb,img_rgb,show = True)
+            res = cv2.cvtColor(res ,cv2.COLOR_GRAY2RGB)
+            pair_image_template_matching_result_ = plots_opencv_image_pair(res,img_rgb,show = True)
 
         if save:
 
-            pair_image_template_matching_result = plots_opencv_image_pair(template,img,show = False)
+            pair_image_template_matching_result = plots_opencv_image_pair(template_rgb,img_rgb,show = False)
             path = os.path.join(output_path ,img_name + '_' + f'{template_name}' +'_' +f'{meth}' +'.jpg')
             cv2.imwrite(path,pair_image_template_matching_result)
-            # cv2.imwrite(path,cv2.cvtColor(pair_image_template_matching_result,cv2.COLOR_GRAY2BGR))
 
-            pair_image_corr_map_score_matching_result_ = plots_opencv_image_pair(res,img,show = False)
+            pair_image_corr_map_score_matching_result_ = plots_opencv_image_pair(res,img_rgb,show = False)
             path = os.path.join(output_path ,img_name + '_' + f'{template_name}' +'_' +f'{meth}'+'_corr_map_score' +'.jpg')
             cv2.imwrite(path,pair_image_corr_map_score_matching_result_)
-            # cv2.imwrite(path,cv2.cvtColor(pair_image_template_matching_result_,cv2.COLOR_GRAY2BGR))
 
     return output_img , res 
 
 
-def template_matching_for_1_scene_several_templates_images(templates_dir_path,scene_image,output_path,show = False , save = False):
-    """
-        do template matching:
-        - 1 scene image 
-        - several templates 
-    """
-    
-    # create_dir_with_override(output_path)
 
-    for img in glob.glob(templates_dir_path + '/*.jpg'): 
-        scene_image = (scene_image)
-        template_matching_func(scene_image,img,output_path,save = True)
         
 
 def main(): 

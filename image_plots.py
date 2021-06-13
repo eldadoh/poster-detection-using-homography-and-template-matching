@@ -12,12 +12,19 @@ def plots_opencv_image_pair(image1,image2,show = False):
     if image1.shape != image2.shape : 
 
         if image1.size <= image2.size :
-            
-            image1 = skimage_resize(image1.copy(), ( image2.shape[0] , image2.shape[1] ), anti_aliasing=True )
+
+            if image2.shape[2] is not None : # HWC , rgb image
+                image1 = skimage_resize(image1.copy(), ( image2.shape[0] , image2.shape[1],image2.shape[2] ), anti_aliasing=True )
+            else: #gray image
+                image1 = skimage_resize(image1.copy(), ( image2.shape[0] , image2.shape[1] ), anti_aliasing=True )
         
         else : 
 
-            image2 = skimage_resize(image2.copy(), ( image1.shape[0] , image1.shape[1]  ), anti_aliasing=True )
+            if image1.shape[2] is not None : 
+                image2 = skimage_resize(image2.copy(), ( image1.shape[0] , image1.shape[1],image1.shape[2] ), anti_aliasing=True )
+            else:
+                image2 = skimage_resize(image2.copy(), ( image1.shape[0] , image1.shape[1] ), anti_aliasing=True )
+
 
     if image1.dtype != np.uint8:
         image1 *= 255
@@ -28,7 +35,9 @@ def plots_opencv_image_pair(image1,image2,show = False):
         image2 = image2.astype(np.uint8)
 
     try:
+        
         concatenated_image = np.hstack([image1,image2])
+        
         if show :
 
             concatenated_image = cv2.cvtColor(concatenated_image,cv2.COLOR_BGR2RGB)
@@ -38,6 +47,7 @@ def plots_opencv_image_pair(image1,image2,show = False):
         return concatenated_image
     
     except Exception as e: 
+        print('My exception : ')
         print(type(e),e)
         print(f'problem images are {image1}_and_{image2}')
         

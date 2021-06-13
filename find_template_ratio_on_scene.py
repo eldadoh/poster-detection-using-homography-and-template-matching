@@ -16,7 +16,7 @@ def downsample_1_scene_according_1_template(scene_path,template_path,save = Fals
     template = cv2.imread(template_path,0) 
     
     h_w_template_array = np.array(template.shape[:2])
-    scaling_ratios = np.linspace(start = 1,stop = 3,num = 10)
+    scaling_ratios = np.linspace(start = 1.25 ,stop = 3,num = 10)
     
     for scale_ratio in scaling_ratios:
         
@@ -37,20 +37,28 @@ def main():
 
 
     scene_path = 'Resulotion_test_data/Second EXP - big letters Y U/scene_new_images/20210604_115029.jpg'
+    scene_path_O_ = 'Resulotion_test_data/Second EXP - big letters Y U/scene_new_images/20210604_115047.jpg'
+
     template_path = '/home/arpalus/Work_Eldad/Arpalus_Code/Eldad-Local/arpalus-poster_detection/Resulotion_test_data/Second EXP - big letters Y U/input_images_hard_big_letters/APPBARBSBMN24x150421.jpg'
+    template_path_O_ = 'Data_new/planograms/resolution_test/Watchung/APPBARBSEMN39x270421.jpg'
+    
     downsampled_scene_dir_path = 'Resulotion_test_data/Second EXP - big letters Y U/scene_new_images/downsampled_scene_dir_path'
+    downsampled_scene_dir_path_O_='Resulotion_test_data/Second EXP - big letters Y U/scene_new_images/downsampled_scene_dir_path_O'
+    
     downsampled_template_matching_results = 'Resulotion_test_data/Second EXP - big letters Y U/downsampled_template_matching_results'
-
-    # scene_downsampled_img, template_img, scene_downsampled_img_path ,template_img_path = downsample_1_scene_according_1_template(scene_path,template_path,save = True , output_path = downsampled_scene_dir_path)
+    downsampled_template_matching_results_O_ = 'Resulotion_test_data/Second EXP - big letters Y U/downsampled_template_matching_results_easy_postive'
     
-    for scene_downsampled_img_path in sorted(glob.glob(downsampled_scene_dir_path + '/*.jpg')):
+    #scaling scene to different scales according to planogram poster 
+   
+    scene_downsampled_img, template_img, scene_downsampled_img_path ,template_img_path = downsample_1_scene_according_1_template(scene_path_O_,template_path_O_,save = True , output_path = downsampled_scene_dir_path_O_)
     
-        template_matching_func(scene_downsampled_img_path,template_path,output_path = downsampled_template_matching_results,show = True,save = True)
+    # template matching of 1 poster with different scales of scene 
+
+    for scene_downsampled_img_path in sorted(glob.glob(downsampled_scene_dir_path_O_ + '/*.jpg')):
+    
+        template_matching_func(scene_downsampled_img_path,template_path_O_,output_path = downsampled_template_matching_results_O_,show = False,save = True)
 
     
-
-
-
 if __name__ == "__main__":
 
     main()
