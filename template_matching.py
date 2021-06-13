@@ -5,10 +5,11 @@ import cv2
 import numpy as np
 from skimage.transform import resize as skimage_resize 
 from skimage.metrics import structural_similarity
-from image_plots import plot_img_opencv,plots_opencv_image_pair
-from img_utils import create_dir_with_override
-from img_utils import Blur
+from image_plots import plots_opencv_image_pair
+from img_utils import create_dir_with_override, threshold_otsu
+from img_utils import Blur,resize_img1_according_to_img2
 from matplotlib import pyplot as plt
+from img_utils import plot_img_opencv
 
 def calc_ssim(poster,scene,show = False,ssim_gray = False) : 
 
@@ -42,55 +43,35 @@ def calc_ssim(poster,scene,show = False,ssim_gray = False) :
 #     results = zip(*loc[::-1])
 #     return results
     
-# # Highlight regions of interest in an image
-# def highlightRois(image, roisCoords, roiWidthHeight):
-#     rois = []
-#     for roiCoord in roisCoords:
-#         roiTopLeft = roiCoord['topLeft']
-#         name = roiCoord['name']
-#         # extract the regions of interest from the image
-#         roiBottomRight = tuple([sum(x) for x in zip(roiTopLeft, roiWidthHeight)])
-#         roi = image[roiTopLeft[1]:roiBottomRight[1], roiTopLeft[0]:roiBottomRight[0]]
-#         rois.append({'topLeft': roiTopLeft, 'bottomRight': roiBottomRight, 'area': roi, 'name': name})
-
-#     # construct a darkened transparent 'layer' to darken everything
-#     # in the image except for the regions of interest
-#     mask = np.zeros(image.shape, dtype = "uint8")
-#     image = cv2.addWeighted(image, 0.25, mask, 0.75, 0)
-
-#     # put the original rois back in the image so that they look 'brighter'
-#     for roi in rois:
-#         image[roi['topLeft'][1]:roi['bottomRight'][1], roi['topLeft'][0]:roi['bottomRight'][0]] = roi['area']
-#         cv2.putText(image, roi['name'][0], roi['topLeft'], cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255,255,255), 2)
-        
-#     return image
-
+def find_maxima_points_on_corr_map_of_template_matching_above_th (img,template,th) : 
+    result = cv2.matchTemplate(img, template, cv2.TM_CCOEFF_NORMED)
+    loc = np.where( result >= th)
+    results = zip(*loc[::-1])
+    return results
+    
 def template_matching_func(scene_path,template_path,output_path,show = False,save = False):
 
     """
         Input : scene image ,template 
-        Returns : img ,res 
+        Returns : img + bbox if template match succed ,res ==> cross corr score map  
     """
     
-    img_name = os.path.basename(scene_path)
-    img_name = img_name[:-len('.jpg')]
-    template_name = os.path.basename(template_path)
+    img_name = os.path.basename(scene_path)[:-len('.jpg')]
+    template_name = os.path.basename(template_path)[:-len('.jpg')]
 
     img = cv2.imread(scene_path,0)
-    # img = Blur(img)
-    input_image = img.copy()
-    # _, img = cv2.threshold(img, 0, 255,cv2.THRESH_OTSU)
     template = cv2.imread(template_path,0)
-
+    input_image = img.copy()
+    
     w, h = template.shape[::-1]
 
-    methods = ['cv2.TM_CCOEFF_NORMED'] 
+    methods = ['cv2.TM_CCOEFF'] 
     # 'cv2.TM_CCOEFF', , 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
 
     for i,meth in enumerate(methods):
-        img = input_image.copy()
+        output_img = input_image.copy()
         method = eval(meth)
-        res = cv2.matchTemplate(img,template,method)
+        res = cv2.matchTemplate(output_img,template,method)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
         
         if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
@@ -100,50 +81,113 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
 
         bottom_right = (top_left[0] + w, top_left[1] + h)
 
-        cv2.rectangle(img,top_left, bottom_right, 0, 30)
-                
-        # threshold = 0.8
-        # loc = np.where( res >= threshold)
-        # for pt in zip(*loc[::-1]):
-        #     cv2.rectangle(img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
+        cv2.rectangle(output_img,top_left, bottom_right, 0, 30)   
                         
         if show :
             
-            plot_img_opencv(img)
-            plot_img_opencv(res)
+            # plot_img_opencv(img)
+            # res = plot_img_opencv(res)
+            pair_image_template_matching_result = plots_opencv_image_pair(template,img,show = True)
+            pair_image_template_matching_result_ = plots_opencv_image_pair(res,img,show = True)
 
         if save:
-            
+
+            pair_image_template_matching_result = plots_opencv_image_pair(template,img,show = False)
             path = os.path.join(output_path ,img_name + '_' + f'{template_name}' +'_' +f'{meth}' +'.jpg')
-            cv2.imwrite(path,img)
+            cv2.imwrite(path,pair_image_template_matching_result)
+            # cv2.imwrite(path,cv2.cvtColor(pair_image_template_matching_result,cv2.COLOR_GRAY2BGR))
 
-    return input_image , res 
+            pair_image_corr_map_score_matching_result_ = plots_opencv_image_pair(res,img,show = False)
+            path = os.path.join(output_path ,img_name + '_' + f'{template_name}' +'_' +f'{meth}'+'_corr_map_score' +'.jpg')
+            cv2.imwrite(path,pair_image_corr_map_score_matching_result_)
+            # cv2.imwrite(path,cv2.cvtColor(pair_image_template_matching_result_,cv2.COLOR_GRAY2BGR))
+
+    return output_img , res 
 
 
-def template_matching_for_dir_scene_images(templates_dir_path,scene_image,output_path,show = False , save = False):
+def template_matching_for_1_scene_several_templates_images(templates_dir_path,scene_image,output_path,show = False , save = False):
     """
         do template matching:
         - 1 scene image 
         - several templates 
     """
-    create_dir_with_override(output_path)
+    
+    # create_dir_with_override(output_path)
 
     for img in glob.glob(templates_dir_path + '/*.jpg'): 
-
-        template_matching_func(scene_image,img,output_path,show,save)
+        scene_image = (scene_image)
+        template_matching_func(scene_image,img,output_path,save = True)
         
 
 def main(): 
 
     poster_planogram_image = 'Data_new/planograms/planograms_parsed_images/APPBARBSDMN24x150421.jpg'
-    templates_dir_path = 'Data_new/planograms/planograms_parsed_images'
-    scene_image = '/home/arpalus/Work_Eldad/Arpalus_Code/Eldad-Local/arpalus-poster_detection/Data_new/realograms/valid_jpg_format_realograms_images/IMG_1559.jpg'
-    output_path = 'Output/template_matching_output'
+    templates_dir_path = 'Resulotion_test_data/Second EXP - big letters Y U/input_images_hard_big_letters'
+    output_path = 'Resulotion_test_data/Second EXP - big letters Y U/template_matching_output'
+    scene_dir_path = 'Resulotion_test_data/Second EXP - big letters Y U/scene_new_images'
+    threshold_planograme_images_dir_path = 'Resulotion_test_data/Second EXP - big letters Y U/threshold_planograme_images_dir_path'
+    template_matching_output_thresholded = 'Resulotion_test_data/Second EXP - big letters Y U/template_matching_output_thresholded'
+    
+    # template_matching_output_thresholded_blured = 'Resulotion_test_data/Second EXP - big letters Y U/template_matching_output_thresholded_blured'
+    # #without threshold
+    # for scene in (sorted(glob.glob(scene_dir_path + '/*.jpg'))):
 
-    #template_matching_func(scene_image,poster_planogram_image,output_path ,show=True, save=False)
+    #     template_matching_for_1_scene_several_templates_images(templates_dir_path,scene,output_path,show = False , save = True)
 
-    template_matching_for_dir_scene_images(templates_dir_path,scene_image,output_path,show = False , save = True)
+    # for img in (sorted(glob.glob(templates_dir_path + '/*.jpg'))):
+            
+    #         threshold_img = threshold_otsu(img)
+    #         threshold_img_name = os.path.join(threshold_planograme_images_dir_path,os.path.basename(img))
+    #         cv2.imwrite(threshold_img_name, threshold_img)
 
+    # for scene in (sorted(glob.glob(scene_dir_path + '/*.jpg'))):
+
+    #     template_matching_for_1_scene_several_templates_images(templates_dir_path,scene,template_matching_output_thresholded,show = False , save = True)
+
+
+    #   ########### scene_new_images_resized_according_to_template ##############
+
+    """ 
+        Note: result of this exp is : it doesnt work .
+        we scale the scene to the template size 
+        so only 1 pass is happening during the cross correltion of the template matching
+        so we arent getting any corr map or satisfying result.
+    """
+    
+    # scene_new_images_resized_according_to_template_dir_path = 'Resulotion_test_data/Second EXP - big letters Y U/scene_new_images_resized_according_to_template'
+    # template_matching_exp3_scaling_the_scene_according_to_template_dir_path = 'Resulotion_test_data/Second EXP - big letters Y U/template_matching_exp3_scaling_the_scene_according_to_template_dir_path'
+    
+    # for scene in sorted(glob.glob(scene_dir_path + '/*.jpg')):
+
+    #     for template in sorted(glob.glob(templates_dir_path + '/*.jpg')):
+
+    #         _, __, scene_resized_img_path ,template_img_path = resize_img1_according_to_img2(scene , template ,output_dir_path=scene_new_images_resized_according_to_template_dir_path,save= True)
+            
+    #         template_matching_func(scene_resized_img_path,template_img_path,output_path = template_matching_exp3_scaling_the_scene_according_to_template_dir_path,show = True,save = True)
+
+    #  #########################################################################
+
+          ########### DEBUG ---- scene_new_images_resized_according_to_template ##############
+      
+    scene_new_images_resized_according_to_template_dir_path = 'Resulotion_test_data/Second EXP - big letters Y U/scene_new_images_resized_according_to_template'
+    template_matching_exp3_scaling_the_scene_according_to_template_dir_path = 'Resulotion_test_data/Second EXP - big letters Y U/template_matching_exp3_scaling_the_scene_according_to_template_dir_path'
+    
+    #for debug
+    templates_dir_path = 'Resulotion_test_data/Second EXP - big letters Y U/DEBUG_template_matching_exp3_scaling_the_scene_according_to_template_dir_path' 
+    
+    for scene in sorted(glob.glob(scene_dir_path + '/*.jpg')):
+        
+        #for debug
+        scene = '20210604_115029_resized_according_to_APPBARBSBMN24x150421.jpg'
+
+        for template in sorted(glob.glob(templates_dir_path + '/*.jpg')):
+
+            _, __, scene_resized_img_path ,template_img_path = resize_img1_according_to_img2(scene , template ,output_dir_path=scene_new_images_resized_according_to_template_dir_path,save= True)
+            
+            template_matching_func(scene_resized_img_path,template_img_path,output_path = template_matching_exp3_scaling_the_scene_according_to_template_dir_path,show = True,save = True)
+
+     #########################################################################
 if __name__ == "__main__":
 
     main()
+    

@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import os
 import shutil 
+from skimage.transform import resize as skimage_resize 
 
 
 """
@@ -12,7 +13,37 @@ Utility script for general image processing tasks
 I didnt use all the func below for the assignment
 """
 
-def plot_img_opencv(img,resize_flag = True,height=400):
+
+def resize_img1_according_to_img2(img1_path,img2_path,output_dir_path = None, save = False):
+    """
+        Input : img1_path , img2_path , output_dir_path
+        Output: img1 resized as the shape of img2 
+    """
+
+    img1_name = os.path.basename(img1_path)[:-len('.jpg')]
+    img2_name = os.path.basename(img2_path)[:-len('.jpg')]
+    img1_name_resized = f'{img1_name}_resized_according_to_{img2_name}.jpg'
+    
+    
+
+    img1 = cv2.imread(img1_path,0)
+    img2 = cv2.imread(img2_path,0)
+    
+    img1_resized_according_to_img2 = skimage_resize(img1.copy(), ( img2.shape[0], img2.shape[1]), anti_aliasing=True )
+    img1_resized_according_to_img2 = Normalize_float_binary_to_uint8_img(img1_resized_according_to_img2)
+    
+    if save:
+        
+        
+        img1_resized_path = os.path.join(output_dir_path , img1_name_resized)
+        
+        cv2.imwrite(img1_resized_path,img1_resized_according_to_img2)
+    
+    return img1_resized_according_to_img2, img2 , img1_resized_path ,img2_path
+
+
+
+def plot_img_opencv(img,resize_flag = True,width=400):
     
     if not img.dtype == np.uint8:
         img *= 255  
@@ -20,7 +51,7 @@ def plot_img_opencv(img,resize_flag = True,height=400):
     
     if resize_flag:
 
-        img = Resize(img,height)
+        img = Resize(img,width)
     
     cv2.imshow('_', img)
 
@@ -38,6 +69,16 @@ def plot_img_opencv(img,resize_flag = True,height=400):
 
         cv2.imwrite(img_name +'.jpg', img)
         
+    return img 
+
+def Normalize_float_binary_to_uint8_img(img):
+
+    if np.max(img) <= (1 + 1e-2): 
+
+        img *= 255 
+        img = img.astype(np.uint8)
+
+    return img
 
 def calc_image_range(img,display = False):
 
@@ -49,10 +90,11 @@ def calc_image_range(img,display = False):
         
     return (min_,max_)
 
-def threshold_otsu(img,show = False):
+def threshold_otsu(img_path,show = False):
 
     """input : grayscale 1d image """
 
+    img = cv2.imread(img_path,0)
     _,threshold_img = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
     
     if show : 
@@ -61,9 +103,15 @@ def threshold_otsu(img,show = False):
 
     return threshold_img
 
-def Blur(img, ker_size=(3, 3)):
-
-    return cv2.GaussianBlur(img, ksize=ker_size, sigmaX=0)
+def Blur(img, ker_size=(3, 3),show = False):
+    
+    blured = cv2.GaussianBlur(img, ksize=ker_size, sigmaX=0)
+    
+    if show : 
+    
+        plot_img_opencv(blured)
+    
+    return blured
 
 def erode(img,structuring=cv2.MORPH_RECT ,size = (3,3),iter = 1 ,show = False):
     
@@ -96,6 +144,7 @@ def Resize(image, width=None, height=None, inter=cv2.INTER_AREA):
 
     if width is None and height is None:
         return image
+        
     if width is None:
         r = height / float(h)
         dim = (int(w * r), height)
@@ -191,6 +240,7 @@ def Adjust_Lumin_Condition_CLAHE(img):
     limg = cv2.merge((cl, a, b))
 
     final = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+    
     return final
 
 def intersection_over_union(boxes_preds, boxes_labels, box_format="midpoint"):

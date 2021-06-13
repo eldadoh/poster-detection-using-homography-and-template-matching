@@ -46,7 +46,7 @@ def hsv_color_detection(img_path,Color,show = False):
 
     if show :
         
-        plot_img_opencv(output_img,height=500)
+        plot_img_opencv(output_img,width=500)
 
 
     return output_img 

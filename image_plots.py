@@ -5,34 +5,45 @@ import matplotlib.pyplot as plt
 import os
 import glob
 from img_utils import plot_img_opencv
-
-
-
-def plots_opencv_image_pair(image1,image2,args,show = False):
+from skimage.transform import resize as skimage_resize 
+        
+def plots_opencv_image_pair(image1,image2,show = False):
     
-    if np.max(image1) <= 1 :
+    if image1.shape != image2.shape : 
+
+        if image1.size <= image2.size :
+            
+            image1 = skimage_resize(image1.copy(), ( image2.shape[0] , image2.shape[1] ), anti_aliasing=True )
+        
+        else : 
+
+            image2 = skimage_resize(image2.copy(), ( image1.shape[0] , image1.shape[1]  ), anti_aliasing=True )
+
+    if image1.dtype != np.uint8:
         image1 *= 255
         image1 = image1.astype(np.uint8)
 
-    if np.max(image2) <= 1 : 
+    if image2.dtype != np.uint8:
         image2 *= 255
         image2 = image2.astype(np.uint8)
 
-    concatenated_image = np.hstack([image1,image2])
+    try:
+        concatenated_image = np.hstack([image1,image2])
+        if show :
 
-    if not args : 
+            concatenated_image = cv2.cvtColor(concatenated_image,cv2.COLOR_BGR2RGB)
+            plt.imshow(concatenated_image)
+            plt.show()
 
-        for arg in args : 
-
-            if np.max(arg) <= 1 :
-                arg *= 255
-                arg = arg.astype(np.uint8) 
-
-            concatenated_image = np.hstack([concatenated_image,arg])
-
+        return concatenated_image
+    
+    except Exception as e: 
+        print(type(e),e)
+        print(f'problem images are {image1}_and_{image2}')
+        
     if show :
 
-            # concatenated_image = cv2.cvtColor(concatenated_image,cv2.COLOR_BGR2RGB)
+            concatenated_image = cv2.cvtColor(concatenated_image,cv2.COLOR_BGR2RGB)
             plt.imshow(concatenated_image)
             plt.show()
 

@@ -19,7 +19,7 @@ def resize_image_multiple_scales(img_path, args ,output_path,show = False , save
     h,w = img.shape[:2]
 
     for arg in args : 
-        
+    
         resized_img = skimage_resize(img.copy(), ( h//arg , w // arg ), anti_aliasing=True )
         
         resized_img*=255 #convert from float[0-1] to uint8 [0-255] 
