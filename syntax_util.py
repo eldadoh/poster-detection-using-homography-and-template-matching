@@ -5,6 +5,19 @@ import cv2
 import itertools
 import functools
 
+def display_zip_object(zip_item , show_length = False) : 
+    
+    if show_length :
+    
+        length_ = len(list(zip_item))
+        
+        return length_ , list(zip_item)
+    
+    else :         
+        
+        return list(zip_item)
+
+
 def iterating_using_zip_and_unpacking():
     
     a = np.random.randint(1,10,size =(3,3))

@@ -6,7 +6,7 @@ import numpy as np
 from skimage.transform import resize as skimage_resize 
 from skimage.metrics import structural_similarity
 from image_plots import plots_opencv_image_pair
-from img_utils import create_dir_with_override, threshold_otsu,threshold_otsu_from_img,convert_dtype_to_uint8
+from img_utils import create_dir_with_override, threshold_otsu,threshold_otsu_from_img,Normalize_img_by_min_max
 from img_utils import Blur,resize_img1_according_to_img2
 from matplotlib import pyplot as plt
 from img_utils import plot_img_opencv
@@ -82,7 +82,7 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
     
     w, h = template.shape[::-1]
 
-    methods = ['cv2.TM_CCOEFF_NORMED'] 
+    methods = ['cv2.TM_CCORR_NORMED'] 
     # 'cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
 
     for i,meth in enumerate(methods):
@@ -90,34 +90,32 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
         method = eval(meth)
         
     
-        try:
-            
+        try:  # in case of couple templates in one scene 
+               
             res = cv2.matchTemplate(output_img,template,method)
-            # plot_img_opencv(res)
-            # res = cv2.normalize(res, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
-            # res = threshold_otsu_from_img(res)
-            # plot_img_opencv(res)
-            res = cv2.GaussianBlur(res, (5,5),0)
-            # plot_img_opencv(res)
-            loc = np.where( res >= 0.3) #return [coord_y_arr , coord_x_arr]
+            loc = np.where( res >= th) #return [coord_y_arr , coord_x_arr]
             res = zip(*loc[::-1])      #fliping to [coord_x_arr , coord_y_arr]
-            # plot_img_opencv(res)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res) #gets only single changel array
+            
             print(f'Achieved threshold of {th} !')
             print(f'Coord of the max_loc is : {max_loc} with Score of {max_val}')
             
-        except Exception as e : 
-
-            #print(f'Exception type : \n{type(e)} , \nException msg:\n {e}')
-            print(f'Didnt achieved threshold of {th} ! picking the highest score point below the threshold ')
-            
-            res = cv2.matchTemplate(output_img,template,method)
-            #plot_img_opencv(res)
-            res = cv2.GaussianBlur(res, (3,3), 0)
-            #plot_img_opencv(res)
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-            print(f'the coord of the max_loc is : {max_loc} with score of {max_val}')
         
+        except Exception as e : #assuming only single template object in the scene 
+
+            res = cv2.matchTemplate(output_img,template,method)
+
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+           
+            print('Score before low pass')
+            print(f'the coord of the max_loc is : {max_loc} with score of {max_val}')
+
+            res = cv2.blur(res,(50,50), 0)
+
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+            print('Score after low pass')
+            print(f'the coord of the max_loc is : {max_loc} with score of {max_val}')
 
         
         if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
@@ -127,18 +125,28 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
 
         bottom_right = (top_left[0] + w, top_left[1] + h)
 
+        cv2.circle(res, top_left, radius=1, color=(0, 255, 0), thickness=10) #plot max_loc point
         cv2.rectangle(img_rgb,top_left, bottom_right, 0, 30)   
-                        
+
         if show :
+
+            res *= 255 
+            res = res.astype(np.uint8)
+
+            plt.imshow(res, cmap='hot', interpolation='nearest')
+            plt.show()
             
-            # plot_img_opencv(img)
-            # res = plot_img_opencv(res)
+            res = np.where(res >= np.max(res) - 10 , 1, 0 ) #HARD CODED PARAM 
+            
+            plt.imshow(res)
+            plt.show()
+
             pair_image_template_matching_result = plots_opencv_image_pair(template_rgb,img_rgb,show = True)
-            res = cv2.cvtColor(res ,cv2.COLOR_GRAY2RGB)
-            pair_image_template_matching_result_ = plots_opencv_image_pair(res,img_rgb,show = True)
+            
+            # pair_image_template_matching_result_ = plots_opencv_image_pair(res,img_rgb,show = True)
 
         if save:
-
+            
             pair_image_template_matching_result = plots_opencv_image_pair(template_rgb,img_rgb,show = False)
             path = os.path.join(output_path ,img_name + '_' + f'{template_name}' +'_' +f'{meth}' +'.jpg')
             cv2.imwrite(path,pair_image_template_matching_result)

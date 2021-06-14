@@ -30,7 +30,7 @@ def resize_img1_according_to_img2(img1_path,img2_path,output_dir_path = None, sa
     img2 = cv2.imread(img2_path,0)
     
     img1_resized_according_to_img2 = skimage_resize(img1.copy(), ( img2.shape[0], img2.shape[1]), anti_aliasing=True )
-    img1_resized_according_to_img2 = convert_dtype_to_uint8(img1_resized_according_to_img2)
+    img1_resized_according_to_img2 = Normalize_img_by_min_max(img1_resized_according_to_img2)
     # img1_resized_according_to_img2 = Normalize_float_binary_to_uint8_img(img1_resized_according_to_img2)
     
 
@@ -47,8 +47,12 @@ def resize_img1_according_to_img2(img1_path,img2_path,output_dir_path = None, sa
 
 
 def plot_img_opencv(image,resize_flag = True,width=400):
-    
+    """
+    This func force conversion to uint8 dtype
+    and by default resize the input img
+    """
     img = image.copy()
+
     if not img.dtype == np.uint8:
 
         img *= 255  
@@ -59,7 +63,6 @@ def plot_img_opencv(image,resize_flag = True,width=400):
         img = Resize(img,width)
     
     cv2.imshow('_', img)
-
     k = cv2.waitKey(0)
 
     if k != ord('s'):
@@ -76,28 +79,8 @@ def plot_img_opencv(image,resize_flag = True,width=400):
         
     return img 
 
-def display_zip_object(zip_item , show_length = False) : 
-    
-    if show_length :
-    
-        length_ = len(list(zip_item))
-        
-        return length_ , list(zip_item)
-    
-    else :         
-        
-        return list(zip_item)
 
-def Normalize_float_binary_to_uint8_img(img):
-
-    if np.max(img) <= (1 + 1e-2): 
-
-        img *= 255 
-        img = img.astype(np.uint8)
-
-    return img
-
-def convert_dtype_to_uint8(img):
+def Normalize_img_by_min_max(img):
 
     """ 
     def normalize8(I):
@@ -110,7 +93,6 @@ def convert_dtype_to_uint8(img):
         I = ((I - mn)/mx) * 255
         return I.astype(np.uint8)
     """ 
-
 
     return cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
 
