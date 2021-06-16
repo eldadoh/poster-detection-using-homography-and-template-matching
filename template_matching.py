@@ -127,13 +127,6 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
             plt.show()
             plt.close()
 
-            # PARAM_SEGMENTATION_BY_COLOR_TH = 0.1 
-            # res = np.where(res >= np.max(res) - PARAM_SEGMENTATION_BY_COLOR_TH , 1, 0 ) # for visualizations 
-    
-            # plt.imshow(res)
-            # plt.show()
-            # plt.close()
-
             pair_image_template_matching_result = plots_opencv_image_pair(template_rgb,img_rgb,show = True)
             
 
@@ -157,10 +150,8 @@ def analyze_correlation_map(corr_map_img,PARAM_SEGMENTATION_BY_COLOR_TH):
 
     return labeled_img,num_of_clusters
 
-def custom_template_matching_func_for_production(scene,template,Blur = True,CORR_MAP_RES_TH=0.7,PARAM_SEGMENTATION_BY_COLOR_TH = 0.1):
+def custom_template_matching_func_for_production(scene,template,Blur = True,CORR_MAP_RES_TH=0.75,PARAM_SEGMENTATION_BY_COLOR_TH = 0.1):
 
-    # img = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
-    # template = cv2.cvtColor(template_rgb, cv2.COLOR_BGR2GRAY)
     
     img = scene
     template = template 
@@ -195,8 +186,6 @@ def custom_template_matching_func_for_production(scene,template,Blur = True,CORR
 
                 min_val, max_score_of_current_img, min_loc, max_loc = cv2.minMaxLoc(res)
 
-
-
         if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
             top_left = min_loc
         else:
@@ -211,7 +200,7 @@ def custom_template_matching_func_for_production(scene,template,Blur = True,CORR
             _ , num_of_clusters = analyze_correlation_map(res,PARAM_SEGMENTATION_BY_COLOR_TH)
 
         cv2.circle(res, top_left, radius=1, color=(0, 255, 0), thickness=10) #plot max_loc point
-        cv2.rectangle(scene,top_left, bottom_right, 0, 30)                 #plot bbox around detection
+        cv2.rectangle(scene,top_left, bottom_right, 0, 30)                   #plot bbox around detection
 
         pair_image_template_matching_result = plots_opencv_image_pair(template,scene.copy(),show = False)    
             
