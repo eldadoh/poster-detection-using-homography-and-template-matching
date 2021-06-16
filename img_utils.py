@@ -10,12 +10,13 @@ from skimage.transform import resize as skimage_resize
 
 """
 Utility script for general image processing tasks
-I didnt use all the func below for the assignment
 """
 
 
 def resize_img1_according_to_img2(img1_path,img2_path,output_dir_path = None, save = False):
     """
+        There is use of :Normalize_img_by_min_max func
+
         Input : img1_path , img2_path , output_dir_path
         Output: img1 resized as the shape of img2 
     """
@@ -24,19 +25,13 @@ def resize_img1_according_to_img2(img1_path,img2_path,output_dir_path = None, sa
     img2_name = os.path.basename(img2_path)[:-len('.jpg')]
     img1_name_resized = f'{img1_name}_resized_according_to_{img2_name}.jpg'
     
-    
-
     img1 = cv2.imread(img1_path,0)
     img2 = cv2.imread(img2_path,0)
     
     img1_resized_according_to_img2 = skimage_resize(img1.copy(), ( img2.shape[0], img2.shape[1]), anti_aliasing=True )
     img1_resized_according_to_img2 = Normalize_img_by_min_max(img1_resized_according_to_img2)
-    # img1_resized_according_to_img2 = Normalize_float_binary_to_uint8_img(img1_resized_according_to_img2)
-    
-
     
     if save:
-        
         
         img1_resized_path = os.path.join(output_dir_path , img1_name_resized)
         
@@ -44,7 +39,35 @@ def resize_img1_according_to_img2(img1_path,img2_path,output_dir_path = None, sa
     
     return img1_resized_according_to_img2, img2 , img1_resized_path ,img2_path
 
+def plot_two_img_matplotlib(img1,img2,title = ''):
 
+    fig = plt.figure()
+    plt.suptitle(f'{title}')
+
+    plt.subplot(1, 2, 1)
+    plt.imshow(img1)
+    plt.xticks([])
+    plt.yticks([])
+
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(img2)
+    plt.xticks([])
+    plt.yticks([])
+
+    plt.show()
+
+def plot_img_matplotlib(img, title = ''):
+
+    fig = plt.figure()
+    plt.title(f'{title}')
+    
+    plt.imshow(img)
+    plt.colorbar()
+    plt.xticks([])
+    plt.yticks([])
+
+    plt.show()
 
 def plot_img_opencv(image,resize_flag = True,width=400):
     """
@@ -79,6 +102,22 @@ def plot_img_opencv(image,resize_flag = True,width=400):
         
     return img 
 
+def plot_x_y_matplotlib(x = np.empty([]),y = np.empty([]),title = ''):
+
+    fig = plt.figure()
+    plt.suptitle(f'{title}')
+    
+    x = np.empty([])
+    y = np.empty([]) 
+
+    plt.subplot(1, 2, 1)
+    plt.plot(x, y)
+
+    plt.subplot(1, 2, 2)
+    plt.plot(x, y)
+
+    plt.show()
+
 
 def Normalize_img_by_min_max(img):
 
@@ -101,10 +140,9 @@ def calc_image_range(img,display = False):
     min_,max_ = np.min(img), np.max(img)
 
     if display : 
-        
-        print(min_,max_)
-        
-    return (min_,max_)
+        print(f'Image values range is ==> Min: {min_} Max: {max_}')
+
+    return min_,max_
 
 def threshold_otsu(img_path,show = False):
 

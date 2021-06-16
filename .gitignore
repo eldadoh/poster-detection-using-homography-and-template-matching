@@ -5,3 +5,5 @@ posters_keypoints_sift
 compare_feature_extractors
 Output
 Resulotion_test_data
+.ipynb_checkpoints/*
+__pycache__/*

@@ -6,7 +6,7 @@ from img_utils import plot_img_opencv ,calc_image_range,Normalize_img_by_min_max
 from skimage.transform import resize as skimage_resize 
 from template_matching import template_matching_func
 
-def downsample_1_scene_according_1_template(scene_path,template_path,save = False , output_path = '' ,param_scale_ratio_low = 1.5 , param_scale_ratio_high = 3  ,  num_of_samples = 6):
+def downsample_one_scene_according_one_template(scene_path,template_path,save = False , output_path = '' ,param_scale_ratio_low = 1.5 , param_scale_ratio_high = 3  ,  num_of_samples = 6,show = False):
 
 
     scene_name = os.path.basename(scene_path)[:-len('.jpg')]
@@ -24,12 +24,13 @@ def downsample_1_scene_according_1_template(scene_path,template_path,save = Fals
         
         downsampled_scene = skimage_resize(scene.copy(), ( h_scene_new, w_scene_new), anti_aliasing=True )
         downsampled_scene = Normalize_img_by_min_max(downsampled_scene)
-
-        print('################################################')
-        print(f'template : {h_w_template_array[0]},{h_w_template_array[1]}')
-        print(f'scene : {h_scene_new},{w_scene_new}')
-        print(f'ratio : {h_w_template_array[0]/h_scene_new} , {h_w_template_array[1]/w_scene_new}') 
-        print('################################################')
+        
+        if show : 
+            print('################################################')
+            print(f'template : {h_w_template_array[0]},{h_w_template_array[1]}')
+            print(f'scene : {h_scene_new},{w_scene_new}')
+            print(f'ratio : {h_w_template_array[0]/h_scene_new} , {h_w_template_array[1]/w_scene_new}') 
+            print('################################################')
 
 
         scene_downsampled_name = f'{scene_name}_downsampled_to_{h_scene_new}_{w_scene_new}.jpg'
@@ -55,13 +56,12 @@ def main():
     
     downsampled_template_matching_results = 'Resulotion_test_data/Second EXP - big letters Y U/downsampled_template_matching_results_hard_postive'
     downsampled_template_matching_results_O_ = 'Resulotion_test_data/Second EXP - big letters Y U/downsampled_template_matching_results_easy_postive'
-    
+
     #scaling scene to different scales according to planogram poster 
     
     #### O #####
 
-    scene_downsampled_img, template_img, scene_downsampled_img_path ,template_img_path = downsample_1_scene_according_1_template(scene_path_O_,template_path_O_,save = True , output_path = downsampled_scene_dir_path_O_)
-    
+    scene_downsampled_img, template_img, scene_downsampled_img_path ,template_img_path = downsample_one_scene_according_one_template(scene_path_O_,template_path_O_,save = True , output_path = downsampled_scene_dir_path_O_)
 
     for scene_downsampled_img_path in sorted(glob.glob(downsampled_scene_dir_path_O_ + '/*.jpg')):
     
@@ -71,14 +71,13 @@ def main():
 
     ### Y ####
 
-    # scene_downsampled_img, template_img, scene_downsampled_img_path ,template_img_path = downsample_1_scene_according_1_template(scene_path,template_path,save = True , output_path = downsampled_scene_dir_path)
+    # scene_downsampled_img, template_img, scene_downsampled_img_path ,template_img_path = downsample_one_scene_according_one_template(scene_path,template_path,save = True , output_path = downsampled_scene_dir_path)
     # # template matching of 1 poster with different scales of scene 
 
     # for scene_downsampled_img_path in sorted(glob.glob(downsampled_scene_dir_path + '/*.jpg')):
     
     #     template_matching_func(scene_downsampled_img_path,template_path_O_,output_path = downsampled_template_matching_results,show = True,save = True,th = 0.5)
 
-    
 if __name__ == "__main__":
 
     main()

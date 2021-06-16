@@ -67,6 +67,7 @@ def find_maxima_points_on_corr_map_of_template_matching_above_th (img,template,t
 def template_matching_func(scene_path,template_path,output_path,show = False,save = False,th = 0.5):
 
     """
+        Template Matching using gray-scale scene and template 
         Input : scene image ,template 
         Returns : img + bbox if template match succed ,res ==> cross corr score map  
     """
@@ -77,13 +78,13 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
     img_rgb = cv2.imread(scene_path)
     template_rgb = cv2.imread(template_path)
 
-    img = cv2.imread(scene_path,0)
+    img = cv2.imread(scene_path,0) 
     template = cv2.imread(template_path,0)
     
     w, h = template.shape[::-1]
 
     methods = ['cv2.TM_CCORR_NORMED'] 
-    # 'cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+    # 'cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED'
 
     for i,meth in enumerate(methods):
         output_img = img.copy()
@@ -129,21 +130,21 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
         cv2.rectangle(img_rgb,top_left, bottom_right, 0, 30)   
 
         if show :
+            # res range is [0-1]
 
-            res *= 255 
-            res = res.astype(np.uint8)
-
+            PARAM_SEGMENTATION_BY_COLOR_TH = 0.1
+            
             plt.imshow(res, cmap='hot', interpolation='nearest')
             plt.show()
             
-            res = np.where(res >= np.max(res) - 10 , 1, 0 ) #HARD CODED PARAM 
+            res = np.where(res >= np.max(res) - PARAM_SEGMENTATION_BY_COLOR_TH , 1, 0 ) #HARD CODED PARAM 
             
             plt.imshow(res)
             plt.show()
 
             pair_image_template_matching_result = plots_opencv_image_pair(template_rgb,img_rgb,show = True)
             
-            # pair_image_template_matching_result_ = plots_opencv_image_pair(res,img_rgb,show = True)
+            #pair_image_template_matching_result_ = plots_opencv_image_pair(res,img_rgb,show = True)
 
         if save:
             
