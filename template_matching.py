@@ -7,6 +7,7 @@ from skimage.transform import resize as skimage_resize
 from skimage.metrics import structural_similarity
 from image_plots import plots_opencv_image_pair
 from img_utils import plot_img_opencv , plot_img_matplotlib, plot_two_img_matplotlib
+from reigon_props import regionprops_criteria_for_template_matching 
 
 def calc_ssim(poster,scene,show = False,ssim_gray = False) : 
 
@@ -150,8 +151,11 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
             
 def analyze_correlation_map(corr_map_img,PARAM_SEGMENTATION_BY_COLOR_TH):
     corr_map_thresholded = np.where(corr_map_img >= np.max(corr_map_img) - PARAM_SEGMENTATION_BY_COLOR_TH , 1, 0 ) # for visualizations 
-    plot_img_matplotlib(corr_map_thresholded)
+    # plot_img_matplotlib(corr_map_thresholded)
+    labeled_img, num_of_clusters  = regionprops_criteria_for_template_matching(corr_map_img)
+    # plot_img_matplotlib(labeled_img)
 
+    return labeled_img,num_of_clusters
 
 def custom_template_matching_func_for_production(scene,template,Blur = True,CORR_MAP_RES_TH=0.7,PARAM_SEGMENTATION_BY_COLOR_TH = 0.1):
 
@@ -202,13 +206,14 @@ def custom_template_matching_func_for_production(scene,template,Blur = True,CORR
         
         detection_coords = [top_left,bottom_right]
 
+        num_of_clusters = None
         if max_score_of_current_img > CORR_MAP_RES_TH:
-            analyze_correlation_map(res,PARAM_SEGMENTATION_BY_COLOR_TH)
+            _ , num_of_clusters = analyze_correlation_map(res,PARAM_SEGMENTATION_BY_COLOR_TH)
 
         cv2.circle(res, top_left, radius=1, color=(0, 255, 0), thickness=10) #plot max_loc point
         cv2.rectangle(scene,top_left, bottom_right, 0, 30)                 #plot bbox around detection
 
         pair_image_template_matching_result = plots_opencv_image_pair(template,scene.copy(),show = False)    
             
-    return max_score_of_current_img, detection_coords, pair_image_template_matching_result 
+    return max_score_of_current_img, detection_coords, pair_image_template_matching_result ,num_of_clusters
 

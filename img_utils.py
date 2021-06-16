@@ -70,8 +70,10 @@ def plot_two_img_matplotlib(img1,img2,title = ''):
 
     plt.show()
 
-def plot_img_matplotlib(img, title = '',show_colorbar = False):
+def plot_img_matplotlib(image, title = '',show_colorbar = False):
 
+    img = image.copy()
+         
     fig = plt.figure()
     plt.title(f'{title}')
     
@@ -173,6 +175,11 @@ def threshold_otsu(img_path,show = False):
         img = cv2.imread(img_path,0)
     except Exception as e : 
         img = img_path
+
+    if img.dtype != np.uint8 : 
+        img *= 255  
+        img = img.astype(np.uint8)
+        
     _,threshold_img = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
     
     if show : 

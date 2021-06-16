@@ -7,6 +7,7 @@ from template_matching import custom_template_matching_func_for_production
 def template_matching_couple_scales_scene_one_template(scene_path,template_path ,param_scale_ratio_low = 1.5 , param_scale_ratio_high = 3  ,  num_of_samples = 6,show = False,MIN_SCORE_TH = 0.6):
 
     max_correlation_score = 0
+    final_number_of_clusters = 0 
     final_detection_coords = []
     final_detection_img = np.empty([])
    
@@ -26,17 +27,18 @@ def template_matching_couple_scales_scene_one_template(scene_path,template_path 
         downsampled_scene = skimage_resize(scene.copy(), ( h_scene_new, w_scene_new), anti_aliasing=True )
         downsampled_scene = Normalize_img_by_min_max(downsampled_scene)
 
-        curr_correlation_score, detection_coords, detection_img  = custom_template_matching_func_for_production(downsampled_scene,template,Blur = True)
+        curr_correlation_score, detection_coords, detection_img,number_of_clusters  = custom_template_matching_func_for_production(downsampled_scene,template,Blur = True)
         
         if curr_correlation_score > max_correlation_score and curr_correlation_score > MIN_SCORE_TH : 
 
                 max_correlation_score = curr_correlation_score
                 final_detection_coords = detection_coords
                 final_detection_img = detection_img
+                final_number_of_clusters = number_of_clusters
 
     if max_correlation_score == 0 :
 
-        print('The template didnt found in the scene or found with not enough correlation score ')
+        print('---The template didnt found in the scene or found with not enough correlation score---')
 
         if show : 
 
@@ -45,11 +47,13 @@ def template_matching_couple_scales_scene_one_template(scene_path,template_path 
     else: 
 
         if show : 
-
-            print(max_correlation_score,final_detection_coords)
+            print('\n---There is a Detection---\n')    
+            print(f'Correlation Score is : {max_correlation_score}')
+            print(f'bbox coords are : {final_detection_coords}\n')
+            print(f'number of clusters : {final_number_of_clusters}\n')
             plot_img_matplotlib(final_detection_img)
 
-    return max_correlation_score,final_detection_coords,final_detection_img
+    return max_correlation_score,final_detection_coords,final_detection_img,final_number_of_clusters
 
 def main(): 
 
@@ -65,8 +69,8 @@ def main():
     #template_matching_couple_scales_scene_one_template(scene_path_only_O_, template_path,show = True,MIN_SCORE_TH=0.6) #0.8906000256538391
     #template_matching_couple_scales_scene_one_template(scene_path_only_O_, template_path_O_,show = True,MIN_SCORE_TH=0.6)
     
-    # template_matching_couple_scales_scene_one_template(scene_path, template_path_O_,show = True,MIN_SCORE_TH=0.7)
-    template_matching_couple_scales_scene_one_template(scene_path, template_path,show = True,MIN_SCORE_TH=0.7)
+    template_matching_couple_scales_scene_one_template(scene_path, template_path_O_,show = True,MIN_SCORE_TH=0.7)
+    # template_matching_couple_scales_scene_one_template(scene_path, template_path,show = True,MIN_SCORE_TH=0.7)
 
 if __name__ == "__main__":
 

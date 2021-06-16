@@ -4,7 +4,7 @@ import glob
 import os
 from opencv_utils import Calc_hist_grayscale
 from image_plots import plot_img_opencv
-from img_utils import dilate,threshold_otsu,calc_image_range
+from img_utils import dilate, plot_img_matplotlib,threshold_otsu,calc_image_range
 from skimage.measure import label,regionprops,regionprops_table
 
 """
@@ -49,17 +49,51 @@ def apply_regionprops(img_path,dilate_flag = False, display= 'Regular'):
         
         print(table_props)
 
+def regionprops_criteria_for_template_matching(correlation_img_path):
+
+    """
+        gets thresholded img , and apply region props on it , to count number of clusters 
+        on the thrsholded img 
+    """
+
+    try : 
+        img = cv2.imread(correlation_img_path,0)
+    except Exception as e : 
+        img = correlation_img_path.copy()
+    
+    img = threshold_otsu(img)
+    
+    labeled_img = label(img,connectivity=2)
+    
+    props=regionprops(labeled_img)
+    
+    labeled_img = np.ascontiguousarray(labeled_img, dtype=np.uint8)
+    
+    all_props_list = []
+
+    for prop in props:
+        
+        area = prop.area
+        centroid = prop.centroid
+        all_props_list.append([area,centroid])
+    
+    background_ = all_props_list.pop(0)
+    valid_centroids = [elem[1] for elem in all_props_list]
+
+    for point in valid_centroids:
+        y,x = int(point[0]),int(point[1])
+        cv2.circle(labeled_img,(x,y),5,(1,1,1))
+    
+    num_of_clusters = len(valid_centroids)
+
+    return labeled_img, num_of_clusters
+
 def main() : 
 
-    img_path_android  = 'Resulotion_test_data/input_images/ANDROIDMN45x60218.jpg'
-    img_path_apple = 'Resulotion_test_data/input_images/APPLEMN45x60218.jpg'
-    OUTPUT_PATH = 'Resulotion_test_data/resized_images' 
-    scene_test_image_android_apple = 'Resulotion_test_data/scene_test_images/IMG_1547_andriod_apple.jpg'
-
     img_path = 'Figure_2.png'
-    apply_regionprops(img_path,dilate_flag = True, display= 'Regular')
-    apply_regionprops(img_path,dilate_flag = True, display= 'pandas_table')
-
+    labeled_img, num_of_clusters  = regionprops_criteria_for_template_matching(img_path)
+    # print(num_of_clusters)
+    # plot_img_matplotlib(labeled_img)
 
 if __name__ == "__main__" : 
     main() 
