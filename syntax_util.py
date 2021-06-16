@@ -5,6 +5,12 @@ import cv2
 import itertools
 import functools
 
+def sort_list_by_elem():
+    
+    lis = [[1,4,7,'e'],[3,6,9,'d'],[2,59,8,'a']]
+    sorted(lis, key=lambda x: x[0]) 
+
+
 def display_zip_object(zip_item , show_length = False) : 
     
     if show_length :

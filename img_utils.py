@@ -55,15 +55,18 @@ def plot_two_img_matplotlib(img1,img2,title = ''):
 
     plt.show()
 
-def plot_img_matplotlib(img, title = ''):
+def plot_img_matplotlib(img, title = '',show_colorbar = False):
 
     fig = plt.figure()
     plt.title(f'{title}')
     
     plt.imshow(img)
-    plt.colorbar()
     plt.xticks([])
     plt.yticks([])
+
+    if show_colorbar:
+        
+        plt.colorbar()
 
     plt.show()
 
@@ -115,6 +118,7 @@ def plot_x_y_matplotlib(x = np.empty([]),y = np.empty([]),title = ''):
     plt.plot(x, y)
 
     plt.show()
+    
 
 
 def Normalize_img_by_min_max(img):

@@ -43,12 +43,18 @@ def template_matching_one_scene_several_templates(templates_dir_path,scene_image
         scene_image = (scene_image)
         template_matching_func(scene_image,img,output_path,save = True)
     
-def template_matching_func(scene_path,template_path,output_path,show = False,save = False,th = 0.5):
+def template_matching_func(scene_path,template_path,output_path,show = False,save = False,Blur = True):
 
     """
         Template Matching using gray-scale scene and template 
-        Input : scene image ,template 
-        Returns : img + bbox if template match succed ,res ==> cross corr score map  
+        Input : rgb scene image ,rgb template 
+        Returns : img + bbox if template match succed ,res ==>  1d cross corr score map  
+
+            max_val score of current scene scale
+            detection_coords : list:[top left ,bottom right]
+            img_rgb: the img with bbox around detection 
+
+        # 'cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED'
     """
     
     img_name = os.path.basename(scene_path)[:-len('.jpg')]
@@ -62,22 +68,24 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
     
     w, h = template.shape[::-1]
 
-    methods = ['cv2.TM_CCORR_NORMED'] 
-    # 'cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED'
+    methods = ['cv2.TM_CCORR_NORMED']
+    CORR_MAP_RES_TH = 0.5
+    BLUR_KER_SIZE = 50 
+        
 
     for i,meth in enumerate(methods):
+        
         output_img = img.copy()
         method = eval(meth)
         
-    
         try:  # in case of couple templates in one scene 
                
             res = cv2.matchTemplate(output_img,template,method)
-            loc = np.where( res >= th) #return [coord_y_arr , coord_x_arr]
+            loc = np.where( res >= CORR_MAP_RES_TH) #return [coord_y_arr , coord_x_arr]
             res = zip(*loc[::-1])      #fliping to [coord_x_arr , coord_y_arr]
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res) #gets only single changel array
             
-            print(f'Achieved threshold of {th} !')
+            print(f'Achieved threshold of {CORR_MAP_RES_TH} !')
             print(f'Coord of the max_loc is : {max_loc} with Score of {max_val}')
             
         
@@ -87,15 +95,17 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
 
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
            
-            print('Score before low pass')
-            print(f'the coord of the max_loc is : {max_loc} with score of {max_val}')
+            # print('Score before low pass')
+            # print(f'the coord of the max_loc is : {max_loc} with score of {max_val}')
 
-            res = cv2.blur(res,(50,50), 0)
+            if Blur: 
+            
+                res = cv2.blur(res,(BLUR_KER_SIZE,BLUR_KER_SIZE), 0)
 
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+                min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
-            print('Score after low pass')
-            print(f'the coord of the max_loc is : {max_loc} with score of {max_val}')
+                # print('Score after low pass')
+                # print(f'the coord of the max_loc is : {max_loc} with score of {max_val}')
 
         
         if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
@@ -104,26 +114,27 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
             top_left = max_loc
 
         bottom_right = (top_left[0] + w, top_left[1] + h)
+        
+        detection_coords = [top_left,bottom_right]
 
         cv2.circle(res, top_left, radius=1, color=(0, 255, 0), thickness=10) #plot max_loc point
-        cv2.rectangle(img_rgb,top_left, bottom_right, 0, 30)   
+        cv2.rectangle(img_rgb,top_left, bottom_right, 0, 30)                 #plot bbox around detection
 
-        if show :
-            # res range is [0-1]
+        if show :  # res range is [0-1]
+            
+            plt.imshow(res, cmap='hot', interpolation ='nearest')
+            plt.show()
+            plt.close()
 
-            PARAM_SEGMENTATION_BY_COLOR_TH = 0.1
-            
-            plt.imshow(res, cmap='hot', interpolation='nearest')
-            plt.show()
-            
-            res = np.where(res >= np.max(res) - PARAM_SEGMENTATION_BY_COLOR_TH , 1, 0 ) #HARD CODED PARAM 
-            
-            plt.imshow(res)
-            plt.show()
+            # PARAM_SEGMENTATION_BY_COLOR_TH = 0.1 
+            # res = np.where(res >= np.max(res) - PARAM_SEGMENTATION_BY_COLOR_TH , 1, 0 ) # for visualizations 
+    
+            # plt.imshow(res)
+            # plt.show()
+            # plt.close()
 
             pair_image_template_matching_result = plots_opencv_image_pair(template_rgb,img_rgb,show = True)
             
-            #pair_image_template_matching_result_ = plots_opencv_image_pair(res,img_rgb,show = True)
 
         if save:
             
@@ -135,5 +146,62 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
             path = os.path.join(output_path ,img_name + '_' + f'{template_name}' +'_' +f'{meth}'+'_corr_map_score' +'.jpg')
             cv2.imwrite(path,pair_image_corr_map_score_matching_result_)
 
-    return img_rgb , res 
+    return max_val, detection_coords, pair_image_template_matching_result 
 
+
+def custom_template_matching_func_for_production(scene,template,Blur = True):
+
+    # img = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
+    # template = cv2.cvtColor(template_rgb, cv2.COLOR_BGR2GRAY)
+    
+    img = scene
+    template = template 
+
+    w, h = template.shape[::-1]
+
+    methods = ['cv2.TM_CCORR_NORMED']
+    CORR_MAP_RES_TH = 0.5
+    BLUR_KER_SIZE = 50 
+        
+
+    for i,meth in enumerate(methods):
+        
+        output_img = img.copy()
+        method = eval(meth)
+        
+        try:  # in case of couple templates in one scene 
+               
+            res = cv2.matchTemplate(output_img,template,method)
+            loc = np.where( res >= CORR_MAP_RES_TH) #return 
+            res = zip(*loc[::-1])      
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+        
+        except Exception as e : #assuming only single template object in the scene 
+
+            res = cv2.matchTemplate(output_img,template,method)
+
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+           
+            if Blur: 
+            
+                res = cv2.blur(res,(BLUR_KER_SIZE,BLUR_KER_SIZE), 0)
+
+                min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+            # print(f'this iter max is : {max_val}')
+
+        if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
+            top_left = min_loc
+        else:
+            top_left = max_loc
+
+        bottom_right = (top_left[0] + w, top_left[1] + h)
+        
+        detection_coords = [top_left,bottom_right]
+
+        cv2.circle(res, top_left, radius=1, color=(0, 255, 0), thickness=10) #plot max_loc point
+        cv2.rectangle(scene,top_left, bottom_right, 0, 30)                 #plot bbox around detection
+
+        pair_image_template_matching_result = plots_opencv_image_pair(template,scene.copy(),show = False)    
+            
+    return max_val, detection_coords, pair_image_template_matching_result 

@@ -2,7 +2,7 @@ import os
 import cv2
 import glob 
 import numpy as np 
-from img_utils import plot_img_opencv ,calc_image_range,Normalize_img_by_min_max
+from img_utils import plot_img_matplotlib, plot_img_opencv ,calc_image_range,Normalize_img_by_min_max
 from skimage.transform import resize as skimage_resize 
 from template_matching import template_matching_func
 
@@ -44,7 +44,6 @@ def downsample_one_scene_according_one_template(scene_path,template_path,save = 
 
 def main(): 
 
-
     scene_path = 'Resulotion_test_data/Second EXP - big letters Y U/scene_new_images/20210604_115029.jpg'
     scene_path_O_ = 'Resulotion_test_data/Second EXP - big letters Y U/scene_new_images/20210604_115059.jpg'
 
@@ -61,13 +60,24 @@ def main():
     
     #### O #####
 
+    max_correlation_score = 0
+    final_detection_coords = []
+    final_detection_img = np.empty([])
+
     scene_downsampled_img, template_img, scene_downsampled_img_path ,template_img_path = downsample_one_scene_according_one_template(scene_path_O_,template_path_O_,save = True , output_path = downsampled_scene_dir_path_O_)
 
     for scene_downsampled_img_path in sorted(glob.glob(downsampled_scene_dir_path_O_ + '/*.jpg')):
     
-        template_matching_func(scene_downsampled_img_path,template_path_O_,output_path = downsampled_template_matching_results_O_,show = True,save = True,th = 0.5)
+        curr_correlation_score, detection_coords, detection_img  = template_matching_func(scene_downsampled_img_path,template_path_O_,output_path = downsampled_template_matching_results_O_,show = False,save = True)
 
+        if curr_correlation_score > max_correlation_score : 
+    
+            max_correlation_score = curr_correlation_score
+            final_detection_coords = detection_coords
+            final_detection_img = detection_img
 
+    print(max_correlation_score,final_detection_coords)
+    plot_img_matplotlib(final_detection_img)
 
     ### Y ####
 
