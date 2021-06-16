@@ -1,14 +1,11 @@
+import numpy as np
 import glob 
 import os 
-import sys
 import cv2
-import numpy as np
+from matplotlib import pyplot as plt
 from skimage.transform import resize as skimage_resize 
 from skimage.metrics import structural_similarity
 from image_plots import plots_opencv_image_pair
-from img_utils import create_dir_with_override, threshold_otsu,threshold_otsu_from_img,Normalize_img_by_min_max
-from img_utils import Blur,resize_img1_according_to_img2
-from matplotlib import pyplot as plt
 from img_utils import plot_img_opencv
 
 def calc_ssim(poster,scene,show = False,ssim_gray = False) : 
@@ -19,11 +16,9 @@ def calc_ssim(poster,scene,show = False,ssim_gray = False) :
         else : 
             poster = skimage_resize(poster, (scene.shape[0] , scene.shape[1])) 
     
-    
     score, diff = structural_similarity(scene, poster, multichannel=True, gaussian_weights=False, full=True)
 
     diff = diff.astype('float32') 
-
 
     if show :
         
@@ -32,20 +27,10 @@ def calc_ssim(poster,scene,show = False,ssim_gray = False) :
             diff = cv2.cvtColor(diff , cv2.COLOR_BGR2GRAY)
         
         plot_img_opencv(diff,resize_flag=True)
+        
+    return score, diff
 
-    
-
-# find all matches of the template in the image
-# returns an array of (x, y) coordinate of the top/left point of each match
-# def getMatches(image, template, threshold):
-#     result = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
-#     loc = np.where( result >= threshold)
-#     results = zip(*loc[::-1])
-#     return results
-    
-
-
-def template_matching_for_1_scene_several_templates_images(templates_dir_path,scene_image,output_path,show = False , save = False):
+def template_matching_one_scene_several_templates(templates_dir_path,scene_image,output_path,show = False , save = False):
     """
         do template matching:
         - 1 scene image 
@@ -57,12 +42,6 @@ def template_matching_for_1_scene_several_templates_images(templates_dir_path,sc
     for img in glob.glob(templates_dir_path + '/*.jpg'): 
         scene_image = (scene_image)
         template_matching_func(scene_image,img,output_path,save = True)
-
-def find_maxima_points_on_corr_map_of_template_matching_above_th (img,template,th) : 
-    result = cv2.matchTemplate(img, template, cv2.TM_CCOEFF_NORMED)
-    loc = np.where( result >= th)
-    results = zip(*loc[::-1])
-    return results
     
 def template_matching_func(scene_path,template_path,output_path,show = False,save = False,th = 0.5):
 
@@ -175,7 +154,7 @@ def main():
     # #without threshold
     # for scene in (sorted(glob.glob(scene_dir_path + '/*.jpg'))):
 
-    #     template_matching_for_1_scene_several_templates_images(templates_dir_path,scene,output_path,show = False , save = True)
+    #     template_matching_one_scene_several_templates(templates_dir_path,scene,output_path,show = False , save = True)
 
     # for img in (sorted(glob.glob(templates_dir_path + '/*.jpg'))):
             
@@ -185,7 +164,7 @@ def main():
 
     # for scene in (sorted(glob.glob(scene_dir_path + '/*.jpg'))):
 
-    #     template_matching_for_1_scene_several_templates_images(templates_dir_path,scene,template_matching_output_thresholded,show = False , save = True)
+    #     template_matching_one_scene_several_templates(templates_dir_path,scene,template_matching_output_thresholded,show = False , save = True)
 
 
     #   ########### scene_new_images_resized_according_to_template ##############
@@ -230,6 +209,7 @@ def main():
     #         template_matching_func(scene_resized_img_path,template_img_path,output_path = template_matching_exp3_scaling_the_scene_according_to_template_dir_path,show = True,save = True)
 
      #########################################################################
+     
 if __name__ == "__main__":
 
     main()

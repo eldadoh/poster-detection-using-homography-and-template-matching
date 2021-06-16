@@ -12,7 +12,6 @@ from skimage.transform import resize as skimage_resize
 Utility script for general image processing tasks
 """
 
-
 def resize_img1_according_to_img2(img1_path,img2_path,output_dir_path = None, save = False):
     """
         There is use of :Normalize_img_by_min_max func
@@ -48,7 +47,6 @@ def plot_two_img_matplotlib(img1,img2,title = ''):
     plt.imshow(img1)
     plt.xticks([])
     plt.yticks([])
-
 
     plt.subplot(1, 2, 2)
     plt.imshow(img2)
@@ -630,26 +628,15 @@ def create_dir_with_override(dir_path):
 def Find_global_min_and_max_in_single_chanel_array(array,mask = np.empty([])):
 
     """ 
-        Finds the global minimum and maximum in an array.
-
-        The function cv::minMaxLoc finds the minimum and maximum element values and their positions.
-        The extremums are searched across the whole array or, 
-        if mask is not an empty array, in the specified array region.
-
-        The function do not work with multi-channel arrays. 
-        If you need to find minimum or maximum elements across all the channels, 
-        use Mat::reshape first to reinterpret the array as single-channel. 
-        Or you may extract the particular channel using either extractImageCOI , or mixChannels , or split . 
-
-        src	input single-channel array.
-        minVal	pointer to the returned minimum value; NULL is used if not required.
-        maxVal	pointer to the returned maximum value; NULL is used if not required.
-        minLoc	pointer to the returned minimum location (in 2D case); NULL is used if not required.
-        maxLoc	pointer to the returned maximum location (in 2D case); NULL is used if not required.
-        mask	optional mask used to select a sub-array. 
-    """ 
+        Finds the global minimum and maximum in an array , and their location .
+        if you need this for multi chanel arrays , use reshape .
+    """
 
     minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(array, mask)
 
-
+def find_maxima_points_on_corr_map_of_template_matching_above_th (img,template,th) : 
+    result = cv2.matchTemplate(img, template, cv2.TM_CCOEFF_NORMED)
+    loc = np.where( result >= th)
+    results = zip(*loc[::-1])
+    return results
 
