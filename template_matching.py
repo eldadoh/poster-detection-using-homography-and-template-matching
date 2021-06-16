@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from skimage.transform import resize as skimage_resize 
 from skimage.metrics import structural_similarity
 from image_plots import plots_opencv_image_pair
-from img_utils import plot_img_opencv
+from img_utils import plot_img_opencv , plot_img_matplotlib, plot_two_img_matplotlib
 
 def calc_ssim(poster,scene,show = False,ssim_gray = False) : 
 
@@ -50,7 +50,7 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
         Input : rgb scene image ,rgb template 
         Returns : img + bbox if template match succed ,res ==>  1d cross corr score map  
 
-            max_val score of current scene scale
+            max_score_of_current_img score of current scene scale
             detection_coords : list:[top left ,bottom right]
             img_rgb: the img with bbox around detection 
 
@@ -83,29 +83,29 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
             res = cv2.matchTemplate(output_img,template,method)
             loc = np.where( res >= CORR_MAP_RES_TH) #return [coord_y_arr , coord_x_arr]
             res = zip(*loc[::-1])      #fliping to [coord_x_arr , coord_y_arr]
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res) #gets only single changel array
+            min_val, max_score_of_current_img, min_loc, max_loc = cv2.minMaxLoc(res) #gets only single changel array
             
             print(f'Achieved threshold of {CORR_MAP_RES_TH} !')
-            print(f'Coord of the max_loc is : {max_loc} with Score of {max_val}')
+            print(f'Coord of the max_loc is : {max_loc} with Score of {max_score_of_current_img}')
             
         
         except Exception as e : #assuming only single template object in the scene 
 
             res = cv2.matchTemplate(output_img,template,method)
 
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+            min_val, max_score_of_current_img, min_loc, max_loc = cv2.minMaxLoc(res)
            
             # print('Score before low pass')
-            # print(f'the coord of the max_loc is : {max_loc} with score of {max_val}')
+            # print(f'the coord of the max_loc is : {max_loc} with score of {max_score_of_current_img}')
 
             if Blur: 
             
                 res = cv2.blur(res,(BLUR_KER_SIZE,BLUR_KER_SIZE), 0)
 
-                min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+                min_val, max_score_of_current_img, min_loc, max_loc = cv2.minMaxLoc(res)
 
                 # print('Score after low pass')
-                # print(f'the coord of the max_loc is : {max_loc} with score of {max_val}')
+                # print(f'the coord of the max_loc is : {max_loc} with score of {max_score_of_current_img}')
 
         
         if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
@@ -146,10 +146,14 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
             path = os.path.join(output_path ,img_name + '_' + f'{template_name}' +'_' +f'{meth}'+'_corr_map_score' +'.jpg')
             cv2.imwrite(path,pair_image_corr_map_score_matching_result_)
 
-    return max_val, detection_coords, pair_image_template_matching_result 
+    return max_score_of_current_img, detection_coords, pair_image_template_matching_result 
+            
+def analyze_correlation_map(corr_map_img,PARAM_SEGMENTATION_BY_COLOR_TH):
+    corr_map_thresholded = np.where(corr_map_img >= np.max(corr_map_img) - PARAM_SEGMENTATION_BY_COLOR_TH , 1, 0 ) # for visualizations 
+    plot_img_matplotlib(corr_map_thresholded)
 
 
-def custom_template_matching_func_for_production(scene,template,Blur = True):
+def custom_template_matching_func_for_production(scene,template,Blur = True,CORR_MAP_RES_TH=0.7,PARAM_SEGMENTATION_BY_COLOR_TH = 0.1):
 
     # img = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
     # template = cv2.cvtColor(template_rgb, cv2.COLOR_BGR2GRAY)
@@ -160,10 +164,9 @@ def custom_template_matching_func_for_production(scene,template,Blur = True):
     w, h = template.shape[::-1]
 
     methods = ['cv2.TM_CCORR_NORMED']
-    CORR_MAP_RES_TH = 0.5
+
     BLUR_KER_SIZE = 50 
         
-
     for i,meth in enumerate(methods):
         
         output_img = img.copy()
@@ -174,21 +177,21 @@ def custom_template_matching_func_for_production(scene,template,Blur = True):
             res = cv2.matchTemplate(output_img,template,method)
             loc = np.where( res >= CORR_MAP_RES_TH) #return 
             res = zip(*loc[::-1])      
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+            min_val, max_score_of_current_img, min_loc, max_loc = cv2.minMaxLoc(res)
         
         except Exception as e : #assuming only single template object in the scene 
 
             res = cv2.matchTemplate(output_img,template,method)
 
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+            min_val, max_score_of_current_img, min_loc, max_loc = cv2.minMaxLoc(res)
            
             if Blur: 
             
                 res = cv2.blur(res,(BLUR_KER_SIZE,BLUR_KER_SIZE), 0)
 
-                min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+                min_val, max_score_of_current_img, min_loc, max_loc = cv2.minMaxLoc(res)
 
-            # print(f'this iter max is : {max_val}')
+
 
         if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
             top_left = min_loc
@@ -199,9 +202,13 @@ def custom_template_matching_func_for_production(scene,template,Blur = True):
         
         detection_coords = [top_left,bottom_right]
 
+        if max_score_of_current_img > CORR_MAP_RES_TH:
+            analyze_correlation_map(res,PARAM_SEGMENTATION_BY_COLOR_TH)
+
         cv2.circle(res, top_left, radius=1, color=(0, 255, 0), thickness=10) #plot max_loc point
         cv2.rectangle(scene,top_left, bottom_right, 0, 30)                 #plot bbox around detection
 
         pair_image_template_matching_result = plots_opencv_image_pair(template,scene.copy(),show = False)    
             
-    return max_val, detection_coords, pair_image_template_matching_result 
+    return max_score_of_current_img, detection_coords, pair_image_template_matching_result 
+

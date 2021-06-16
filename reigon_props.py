@@ -56,8 +56,9 @@ def main() :
     OUTPUT_PATH = 'Resulotion_test_data/resized_images' 
     scene_test_image_android_apple = 'Resulotion_test_data/scene_test_images/IMG_1547_andriod_apple.jpg'
 
-    # apply_regionprops(img_path_android,dilate_flag = True, display= 'Regular')
-    # apply_regionprops(img_path_android,dilate_flag = True, display= 'pandas_table')
+    img_path = 'Figure_2.png'
+    apply_regionprops(img_path,dilate_flag = True, display= 'Regular')
+    apply_regionprops(img_path,dilate_flag = True, display= 'pandas_table')
 
 
 if __name__ == "__main__" : 
