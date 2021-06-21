@@ -7,7 +7,7 @@ from template_matching import custom_template_matching_func_for_production
 import glob
 import os 
 
-def template_matching_couple_scales_scene_one_template(scene_path,template_path ,param_scale_ratio_low = 1.5 , param_scale_ratio_high = 3  ,  num_of_samples = 6,show = False,MIN_SCORE_TH = 0.6):
+def template_matching_couple_scales_scene_one_template(scene_path,template_path ,param_scale_ratio_low = 1.5 , param_scale_ratio_high = 3.5  ,  num_of_samples = 10,show = False,MIN_SCORE_TH = 0.75):
 
     max_correlation_score = 0
     final_number_of_clusters = 0 
@@ -71,6 +71,8 @@ def run_template_matching_on_various_templates(templates_dir_path,scene_path,sho
     for template_path in sorted(glob.glob(templates_dir_path +'/*.jpg')):
 
         curr_max_correlation_score,curr_detection_coords,curr_detection_img,curr_number_of_clusters = template_matching_couple_scales_scene_one_template(scene_path, template_path,show = False,MIN_SCORE_TH=0.5)
+        
+        curr_number_of_clusters = curr_number_of_clusters if curr_number_of_clusters is not None else min_number_of_clusters
 
         if curr_number_of_clusters < min_number_of_clusters :
             
@@ -111,7 +113,7 @@ def main():
     # template_matching_couple_scales_scene_one_template(scene_path, template_path,show = True,MIN_SCORE_TH=0.7)
 
 
-#### one scene several templates ##### 
+#### one scene several templates #### 
 
     TEMPLATES_DIR_PATH = 'Resulotion_test_data/Second EXP - big letters Y U/input_images_hard_big_letters'
     

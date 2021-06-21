@@ -31,19 +31,6 @@ def calc_ssim(poster,scene,show = False,ssim_gray = False) :
         
     return score, diff
 
-def template_matching_one_scene_several_templates(templates_dir_path,scene_image,output_path,show = False , save = False):
-    """
-        do template matching:
-        - 1 scene image 
-        - several templates 
-    """
-    
-    # create_dir_with_override(output_path)
-
-    for img in glob.glob(templates_dir_path + '/*.jpg'): 
-        scene_image = (scene_image)
-        template_matching_func(scene_image,img,output_path,save = True)
-    
 def template_matching_func(scene_path,template_path,output_path,show = False,save = False,Blur = True):
 
     """
@@ -142,6 +129,21 @@ def template_matching_func(scene_path,template_path,output_path,show = False,sav
 
     return max_score_of_current_img, detection_coords, pair_image_template_matching_result 
             
+
+def template_matching_one_scene_several_templates(templates_dir_path,scene_image,output_path,show = False , save = False):
+    """
+        do template matching:
+        - 1 scene image 
+        - several templates 
+    """
+    
+    # create_dir_with_override(output_path)
+
+    for img in glob.glob(templates_dir_path + '/*.jpg'): 
+        scene_image = (scene_image)
+        template_matching_func(scene_image,img,output_path,save = True)
+    
+
 def analyze_correlation_map(corr_map_img,PARAM_SEGMENTATION_BY_COLOR_TH):
     corr_map_thresholded = np.where(corr_map_img >= np.max(corr_map_img) - PARAM_SEGMENTATION_BY_COLOR_TH , 1, 0 ) # for visualizations 
     # plot_img_matplotlib(corr_map_thresholded)

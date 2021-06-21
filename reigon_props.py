@@ -76,10 +76,14 @@ def regionprops_criteria_for_template_matching(correlation_img_path):
         area = prop.area
         centroid = prop.centroid
         all_props_list.append([area,centroid])
-    
-    background_ = all_props_list.pop(0)
-    valid_centroids = [elem[1] for elem in all_props_list]
 
+    # print(f'{all_props_list}+\n')
+    all_props_list = sorted(all_props_list, key=lambda x: x[0]) 
+    # print(f'{all_props_list}+\n')
+    background_ = all_props_list.pop(0)
+    # print(f'{all_props_list}+\n')
+    valid_centroids = [elem[1] for elem in all_props_list]
+    
     for point in valid_centroids:
         y,x = int(point[0]),int(point[1])
         cv2.circle(labeled_img,(x,y),5,(1,1,1))
@@ -88,7 +92,7 @@ def regionprops_criteria_for_template_matching(correlation_img_path):
 
     return labeled_img, num_of_clusters
 
-def main() : 
+def main(): 
 
     img_path = 'Figure_2.png'
     labeled_img, num_of_clusters  = regionprops_criteria_for_template_matching(img_path)
