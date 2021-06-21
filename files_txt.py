@@ -1,5 +1,27 @@
 import numpy as np
 
+def read_and_process_from_file_line_by_line(file_name_path = 'filename'):
+     
+     s =  ''
+     
+     with open(f'{file_name_path}' + '.txt', 'r',encoding="utf8") as f:
+
+         for line in f:
+
+            s+= line
+
+     print(s)
+
+def read_from_file(file_name_path = 'filename'):
+
+    with open(f'{file_name_path}' + '.txt', 'r',encoding="utf8") as f:
+        
+        all_lines = f.read() #read till the end of the file 
+        print(all_lines)
+
+        line = f.readline() #read the next line in the file iterable  
+        print(line)
+
 def write_to_file(file_name_path = 'filename'):
 
     """
@@ -26,8 +48,10 @@ def write_to_file_using_print_function(file_name_path = 'filename'):
 
 def main(): 
     
-    # write_to_file('file')
-    # write_to_file_using_print_function('file_print')
+    # write_to_file(file_name_path = 'filename')
+    # write_to_file_using_print_function(file = 'file_print')
+    # read_from_file()
+    read_and_process_from_file_line_by_line()
     pass 
 
 if __name__ == "__main__":
