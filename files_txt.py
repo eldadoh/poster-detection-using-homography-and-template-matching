@@ -23,13 +23,6 @@ def write_to_file_using_print_function(file_name_path = 'filename'):
         
         print('using print function to write to a file', file = f )
         
-           
-        
-
-
-    
-
-
 
 def main(): 
     
