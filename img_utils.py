@@ -140,8 +140,6 @@ def plot_x_y_matplotlib(x = np.empty([]),y = np.empty([]),title = ''):
 
     plt.show()
     
-
-
 def Normalize_img_by_min_max(img):
 
     """ 

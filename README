@@ -1,0 +1,17 @@
+PROJECT NAME : poster_detection_homography_and_template_matching
+
+LAST UPDATE : 21/06/21
+
+MAIN TASK : 1. Detect (classify and localize) templates (posters) on realograms (real scene)
+            using keypoints+homography (poster_detection.py)
+            
+            2. in case the template doesnt have enough valuable key points, homography will fail to match between the template
+               and it place in the scene , so we decided to try template matching algorithm on different scales , 
+               and by analyzing correlation map scores for each scale (5 per template) and each template class (currently only 4 'hard' templates)
+               (scaled-template-matching.py)
+
+METHODS USED IN THIS PROJECT: key points extractors , homography , template matching , region props , binary image segmentation , 
+                               region charcaristics (bbox area , region area , number of points , etc)
+
+ASSETS: - short presentation created for weekly CV meeting 
+        - jupyter notebook with couple of experiments 

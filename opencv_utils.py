@@ -1,3 +1,4 @@
+from img_utils import plot_img_opencv
 import shutil
 import itertools
 import os
@@ -7,10 +8,10 @@ import cv2
 from cv2 import BFMatcher as bf
 from matplotlib import pyplot as plt
 from skimage.transform import resize as skimage_resize 
-from image_plots import plot_img_opencv ,plots_opencv_images_pair_from_dir
 from collections import defaultdict
 
-def check_diff_feature_extractors_performence_on_singel_image(img_path,display = False):
+
+def check_diff_feature_extractors_performence_on_singel_image(img_path,show = False):
 
     """
         applying the next feature extractors : ['SIFT','ORB','FAST', 'SIMPLE_BLOB_DETECTOR']
@@ -66,7 +67,7 @@ def check_diff_feature_extractors_performence_on_singel_image(img_path,display =
         else :
             continue
 
-    if display : 
+    if show : 
         
         for key in key_points_dict.keys():
 
@@ -149,7 +150,8 @@ def Calc_and_Plot_matched_keypoints_between_two_images(img1_path, img2_path , sh
 
     return matches, kpA, desA,kpB, desB
 
-def Calc_hist_grayscale(img , show) : 
+
+def Calc_hist_grayscale(img , show = False) : 
     
     """
     Params:
@@ -160,10 +162,12 @@ def Calc_hist_grayscale(img , show) :
     ranges : this is our RANGE. Normally, it is [0,256].
     """
 
-    img = cv2.imread(img)
-    img = cv2.cvtColor(img ,cv2.COLOR_BGR2GRAY)
-    hist = cv2.calcHist([img],[0],None,[256],[0,256])
-
+    # # img = cv2.imread(img)
+    # img = cv2.cvtColor(img ,cv2.COLOR_BGR2GRAY)
+    img_ = img.astype(np.uint8)
+    hist = cv2.calcHist([img_],[0],None,[256],[0,256])
+    
+    
     if show : 
         plt.hist(img.ravel(),256,[0,256]) 
         plt.show()
@@ -180,18 +184,22 @@ def Calc_hist_rgb(img , show) :
         plt.xlim([0,256])
     plt.show()
 
-def resize_image_to_multiple_scales(img_path, args ,output_path,show=False, save= False):
+def resize_image_to_multiple_scales(img_path, scale_args ,output_path = None ,show=False, save= False):
     
     """ 
+        WARNING : THIS FUNCTION FORCE CONVERSION TO 0-255 , NP.UINT8
         args = list of downsampling ratio numbers 
         ex : args = [2,4,8]
     """
-    
-    img = cv2.imread(img_path)
+
+    try : 
+        img = cv2.imread(img_path)
+    except Exception as e : 
+        img = img_path
 
     h,w = img.shape[:2]
 
-    for arg in args : 
+    for arg in scale_args : 
         
         resized_img = skimage_resize(img.copy(), ( h//arg , w // arg ), anti_aliasing=True )
         
@@ -200,12 +208,12 @@ def resize_image_to_multiple_scales(img_path, args ,output_path,show=False, save
         
         h_,w_ = resized_img.shape[:2]
 
-        resized_image_name = os.path.basename(img_path)[:-len('.jpg')] + '_factor' + str(arg*arg) + '_size' +f'{h_}' + '_' +f'{w_}' +'.jpg'
-        resized_img_output_path  = os.path.join(output_path,resized_image_name)
 
         if show :    
-            plot_img_opencv(resized_img,resize_flag=False)
+            plot_img_opencv(resized_img)
         if save : 
+            resized_image_name = os.path.basename(img_path)[:-len('.jpg')] + '_factor' + str(arg*arg) + '_size' +f'{h_}' + '_' +f'{w_}' + '.jpg'
+            resized_img_output_path  = os.path.join(output_path,resized_image_name)
             cv2.imwrite(resized_img_output_path,resized_img)
 
 
